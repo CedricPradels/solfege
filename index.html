@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A1E28" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Solfège">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="Tutoriel de solfège en 10 leçons pour choriste débutant, avec exercices de chant au micro.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Solfège du choriste</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500;1,700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Une colonne de lecture façon livret de chant ; les consignes en rouge « rubrique » comme dans les livres liturgiques, la note en cours de lecture en violet. */
+:root{
+  --paper:#F3F4F7; --surface:#FFFFFF; --ink:#1B2131; --muted:#596175; --line:#D6DAE3; --staff:#4A5166;
+  --rubric:#AE261E; --rubric-soft:#F8E7E5; --play:#5A3E99; --play-soft:#ECE7F7;
+  --ok:#21704A; --ok-soft:#E1F1E7; --warn:#93540A; --warn-soft:#FAEEDC;
+  --now:#0B3DB0; --now-bg:#FFDD3C;
+  --f-display:"Alegreya", Georgia, "Times New Roman", serif;
+  --f-body:"Alegreya Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11141B; --surface:#1A1E28; --ink:#E7E9F0; --muted:#9EA5B6; --line:#2C3242; --staff:#AEB5C5;
+    --rubric:#EE6F64; --rubric-soft:#3A1F1E; --play:#AE97EE; --play-soft:#2B2444;
+    --ok:#62CB91; --ok-soft:#173020; --warn:#E9B15E; --warn-soft:#35290F; color-scheme:dark;
+    --now:#10131C; --now-bg:#FFD83D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11141B; --surface:#1A1E28; --ink:#E7E9F0; --muted:#9EA5B6; --line:#2C3242; --staff:#AEB5C5;
+  --rubric:#EE6F64; --rubric-soft:#3A1F1E; --play:#AE97EE; --play-soft:#2B2444;
+  --ok:#62CB91; --ok-soft:#173020; --warn:#E9B15E; --warn-soft:#35290F; color-scheme:dark;
+  --now:#10131C; --now-bg:#FFD83D;
+}
+*{box-sizing:border-box}
+button,a,input,textarea{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{background:var(--paper);color:var(--ink);font:400 18px/1.6 var(--f-body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--play);outline-offset:2px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:720px;margin:0 auto}
+
+/* En-tête */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding-block:10px}
+.brand{font:700 1.15rem/1.2 var(--f-display);text-decoration:none;margin-right:auto}
+.brand span{color:var(--rubric)}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.nav a{text-decoration:none;font-weight:500;font-size:.92rem;padding:5px 10px;border-radius:999px;color:var(--muted);white-space:nowrap}
+.nav a[aria-current="page"]{background:var(--play-soft);color:var(--play)}
+.prog{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pbar{width:90px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+
+main{padding-block:28px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2}
+h1{font-size:clamp(1.9rem,6vw,2.6rem);margin:.1em 0 .35em;font-weight:700}
+h2{font-size:1.5rem;margin:1.8em 0 .5em}
+h3{font-size:1.25rem;margin:1.7em 0 .4em}
+p{margin:.6em 0}
+.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--rubric);margin:0}
+.lead{font-size:1.12rem;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;cursor:pointer;font-weight:500;text-decoration:none;line-height:1.2}
+.btn:hover{border-color:var(--staff)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.play{border-color:var(--play);color:var(--play)}
+.btn.sm{padding:5px 12px;font-size:.9rem}
+.btn[aria-pressed="true"]{background:var(--play);border-color:var(--play);color:var(--surface)}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* Accueil */
+.hero{padding-block:8px 4px}
+.hero p.lead{max-width:60ch}
+.resume{margin-top:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:22px 0}
+.panel h2{margin-top:0;font-size:1.25rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.lessons{list-style:none;padding:0;margin:0;display:grid;gap:0;border-top:1px solid var(--line)}
+.lessons li{border-bottom:1px solid var(--line)}
+.lessons a{display:grid;grid-template-columns:2.4rem 1fr auto;gap:4px 12px;align-items:baseline;padding:14px 4px;text-decoration:none}
+.lessons a:hover .lt{color:var(--play)}
+.ln-num{font:700 1.35rem/1 var(--f-display);color:var(--rubric);font-variant-numeric:tabular-nums}
+.lt{font-weight:700;font-size:1.05rem}
+.lg{grid-column:2;color:var(--muted);font-size:.92rem;line-height:1.45;min-width:0}
+.st{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:999px;white-space:nowrap;align-self:center}
+.st.done{background:var(--ok-soft);color:var(--ok)}
+.st.todo{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.st.cur{background:var(--play-soft);color:var(--play)}
+.tips{padding-left:1.1em}
+.tips li{margin:.3em 0}
+
+/* Leçon */
+.goal{background:var(--surface);border-left:3px solid var(--ok);padding:10px 14px;border-radius:0 var(--radius) var(--radius) 0;margin:14px 0 6px}
+.rub{border:1px solid var(--rubric);background:var(--rubric-soft);border-radius:var(--radius);padding:14px 18px;margin:28px 0}
+.rub-t{font-family:var(--f-display);font-style:italic;font-weight:700;color:var(--rubric);margin:0 0 4px;font-size:1.08rem}
+.rub ol{margin:.3em 0;padding-left:1.2em}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+.tw{overflow-x:auto;margin:12px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.sym{font:italic 700 1.2rem/1.2 var(--f-display);white-space:nowrap}
+.mnemo{font-family:var(--f-display);font-style:italic;font-size:1.1rem}
+.mnemo b{color:var(--rubric);font-style:normal}
+
+/* Figures musicales */
+.fig{margin:16px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 10px}
+.fig .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.fig figcaption{font-size:.92rem;color:var(--muted);margin:6px 4px 8px;line-height:1.45}
+.fig .row{margin:0 2px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.pair .fig{margin:6px 0}
+svg.staff{display:block;width:100%;height:auto;color:var(--ink);margin:0 auto}
+.staff .ln{stroke:var(--staff);stroke-width:1}
+.staff .lb{fill:var(--muted);font:500 12px var(--f-body)}
+.staff .lb.hi{fill:var(--rubric);font-weight:700}
+.staff .ly{fill:var(--ink);font:italic 500 14px var(--f-display)}
+.staff .ts{fill:currentColor;font:700 21px var(--f-display)}
+.staff .c8{fill:currentColor;font:700 11px var(--f-display)}
+.staff .hi{color:var(--rubric)}
+.staff .okn{color:var(--ok)}
+.staff .tgt{color:var(--rubric)}
+.staff .tgt>.hit{fill:var(--rubric-soft);stroke:var(--rubric);stroke-width:1.5}
+.staff .on{color:var(--now)}
+.staff .on>.hit{fill:var(--now-bg);fill-opacity:.9;stroke:var(--now);stroke-width:1.5}
+.swipe{display:none;font-size:.8rem;color:var(--muted);margin:4px 4px 0}
+.scroll.ovf+.swipe{display:block}
+.scroll.ovf:not(.end){-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
+.staff [data-m]{cursor:pointer}
+.staff .nm{display:none}
+.show-names .staff .nm{display:inline}
+.staff .vl{fill:var(--muted);font:700 11px var(--f-body);letter-spacing:.05em}
+
+/* Quiz */
+.quiz{margin-top:36px;border-top:2px solid var(--ink);padding-top:6px}
+.qlist{padding-left:1.3em}
+.q{margin:18px 0}
+.qq{font-weight:700;margin:.2em 0 .5em}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;text-align:left;line-height:1.3}
+.opt:hover:not(:disabled){border-color:var(--staff)}
+.opt.good{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opt.bad{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.opt:disabled{cursor:default}
+.fb{font-size:.95rem;margin:.5em 0 0;padding:8px 12px;border-radius:8px}
+.fb.good{background:var(--ok-soft)}
+.fb.bad{background:var(--warn-soft)}
+.fb b{font-weight:700}
+.qres{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin-top:16px}
+.qres strong{font:700 1.4rem var(--f-display)}
+
+.notes textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius);padding:10px 12px;font:inherit;font-size:1rem;resize:vertical}
+.done-row{margin:30px 0 10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn.isdone{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.pn{display:flex;justify-content:space-between;gap:12px;margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.pn a{text-decoration:none;font-weight:500;min-width:0}
+.pn small{display:block;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+
+/* Widgets */
+.widget{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:16px 0}
+.widget h3{margin-top:0}
+.kb-wrap{overflow-x:auto}
+.kb{position:relative;display:flex;height:170px;user-select:none;-webkit-user-select:none}
+.kw{flex:1;border:1px solid var(--staff);border-right-width:0;background:#FFFFFF;color:#2A3040;border-radius:0 0 6px 6px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 0 8px;font-size:.78rem;font-weight:700;cursor:pointer;touch-action:manipulation}
+.kw:last-of-type{border-right-width:1px}
+.kw small{font-weight:500;font-size:.62rem;color:#AE261E;line-height:1.1;text-align:center}
+.kbk{position:absolute;top:0;height:60%;background:#1E2230;border:1px solid #1E2230;border-radius:0 0 4px 4px;cursor:pointer;z-index:2;touch-action:manipulation}
+.kw.on{background:var(--now-bg);color:#10131C}
+.kbk.on{background:var(--now-bg);border-color:#10131C}
+.metro .dots{display:flex;gap:10px;margin:12px 0}
+.metro .dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--staff)}
+.metro .dots i.on{background:var(--play);border-color:var(--play)}
+.metro .dots i.first{border-color:var(--rubric)}
+.metro .dots i.first.on{background:var(--rubric)}
+input[type=range]{width:min(100%,280px);accent-color:var(--play)}
+.tempo{font:700 1.6rem var(--f-display);font-variant-numeric:tabular-nums}
+.trainer .card{display:flex;justify-content:center;min-height:140px;align-items:center}
+.trainer .card svg{max-width:260px}
+.trainer .answers{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:12px}
+.trainer .answers .opt{text-align:center;font-weight:700;min-height:52px;padding:4px 2px;font-size:1.05rem}
+.stats{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:12px}
+.stats b{color:var(--ink)}
+.msg{min-height:1.6em;margin:.6em 0 0;font-weight:500}
+.msg.good{color:var(--ok)} .msg.bad{color:var(--warn)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 14px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--play);color:var(--surface)}
+dl.lex{margin:0}
+dl.lex div{padding:10px 0;border-bottom:1px solid var(--line)}
+dl.lex dt{font-weight:700;font-family:var(--f-display);font-size:1.08rem}
+dl.lex dd{margin:2px 0 0;color:var(--muted)}
+.code{width:100%;min-height:90px;font:16px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:8px;word-break:break-all}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:.9rem}
+.status i{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+.status.off i{background:var(--warn)}
+.confirm{border:1px solid var(--warn);background:var(--warn-soft);padding:12px 14px;border-radius:8px;margin-top:10px}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-block:18px 28px}
+/* Chant */
+.sing{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:18px 0}
+.sing h3{margin:.15em 0 .2em}
+.sing .sfig .fig{margin:10px 0}
+.echo-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px}
+.qmark{font:700 3rem/1 var(--f-display);color:var(--muted)}
+.snow{display:grid;gap:8px;margin:8px 0 12px}
+.target{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap}
+.tl{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.tname{font:700 2.3rem/1 var(--f-display);color:var(--rubric);min-width:3ch}
+.sung{color:var(--muted);margin-left:auto;font-weight:500}
+.gauge{position:relative;height:42px;border-radius:10px;background:var(--paper);border:1px solid var(--line);overflow:hidden}
+.gauge .zone{position:absolute;top:0;bottom:0;left:27.5%;width:45%;background:var(--ok-soft)}
+.gauge .mid{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--ok);opacity:.6}
+.gauge .needle{position:absolute;top:5px;bottom:5px;left:50%;width:10px;margin-left:-5px;border-radius:5px;background:var(--warn);transition:left .09s linear}
+.gauge .needle.ok{background:var(--ok)}
+.gauge .needle.off{opacity:0}
+.glab{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.holdbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.holdbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .09s linear}
+.sing .self{margin-bottom:10px}
+.sing.selfmode .gauge,.sing.selfmode .glab,.sing.selfmode .holdbar,.sing.selfmode .sung{display:none}
+.oct{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--muted)}
+.oct input{width:22px;height:22px;accent-color:var(--play);flex:none}
+.sres{background:var(--ok-soft);border-radius:var(--radius);padding:12px 16px;margin-top:12px}
+.sres strong{font:700 1.4rem var(--f-display)}
+.micnote{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:.92rem;margin:8px 0}
+.micnote p{margin:.3em 0}
+details.sx{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin:10px 0}
+details.sx>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:2.4rem 1fr auto;gap:2px 10px;align-items:center;padding:12px 14px;min-height:60px}
+details.sx>summary::-webkit-details-marker{display:none}
+details.sx[open]>summary{border-bottom:1px solid var(--line)}
+details.sx .sing{border:0;margin:0!important;border-radius:0}
+.tabbar{display:none}
+@media (max-width:640px){
+  body{font-size:17px}
+  .top .nav{display:none}
+  .top-in{padding-block:9px;flex-wrap:nowrap}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;text-decoration:none;font-size:.72rem;font-weight:500;color:var(--muted)}
+  .tabbar svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar a[aria-current="page"]{color:var(--play)}
+  .tabbar a[aria-current="page"] svg{stroke-width:2.3}
+  main{padding-block:20px 40px}
+  footer{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .fig{margin-left:-16px;margin-right:-16px;border-radius:0;border-left:0;border-right:0;padding:10px 6px}
+  .fig figcaption{margin:6px 10px 10px}
+  .fig .row{margin:0 10px}
+  .pair .fig{margin:6px -16px}
+  .btn.sm{min-height:42px;padding:8px 14px}
+  .btn{min-height:46px}
+  .opt{min-height:46px;padding:9px 14px}
+  .tw{margin-left:-4px;margin-right:-4px}
+  th,td{padding:8px 10px}
+  .panel{padding:16px}
+  .pn{flex-direction:column}
+  .pn a[style]{text-align:left!important}
+  .lessons a{padding:14px 0}
+  .widget,.sing{margin-left:-16px;margin-right:-16px;border-radius:0;border-left:0;border-right:0}
+  .sing .sfig .fig{margin-left:-16px;margin-right:-16px}
+  details.sx{margin-left:-6px;margin-right:-6px}
+  .tabbar{grid-template-columns:repeat(5,1fr)}
+  .tabbar a{font-size:.68rem}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in gut col">
+    <a class="brand" href="#accueil">Solfège <span>du</span> choriste</a>
+    <div class="prog" title="Leçons terminées"><span id="progTxt">0 / 10</span><div class="pbar"><i id="progBar"></i></div></div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#accueil" data-nav="accueil">Parcours</a>
+      <a href="#chant" data-nav="chant">Chanter</a>
+      <a href="#entrainement" data-nav="entrainement">Entraînement</a>
+      <a href="#lexique" data-nav="lexique">Lexique</a>
+      <a href="#sauvegarde" data-nav="sauvegarde">Ma progression</a>
+    </nav>
+  </div>
+</header>
+<main class="gut"><div class="col" id="view"></div></main>
+<footer class="gut"><div class="col"><span class="status" id="storeStatus"><i></i><span>Progression enregistrée dans ce navigateur</span></span></div></footer>
+<nav class="tabbar" aria-label="Sections">
+  <a href="#accueil" data-nav="accueil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Parcours</a>
+  <a href="#chant" data-nav="chant"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>Chanter</a>
+  <a href="#entrainement" data-nav="entrainement"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="8" cy="17.5" rx="3.2" ry="2.4" transform="rotate(-20 8 17.5)"/><path d="M11 16.5V4l8 2.5v4L11 8"/></svg>Entraîner</a>
+  <a href="#lexique" data-nav="lexique"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C6.5 4 9.5 4 12 5.5V20c-2.5-1.5-5.5-1.5-8 0zM20 5.5C17.5 4 14.5 4 12 5.5V20c2.5-1.5 5.5-1.5 8 0z"/></svg>Lexique</a>
+  <a href="#sauvegarde" data-nav="sauvegarde"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.7 2.7L16.2 9.5"/></svg>Progrès</a>
+</nav>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Stockage ---------- */
+const KEY="solfege-choriste-v1";
+const def=()=>({v:1,voice:"",done:{},quiz:{},notes:{},train:{sol:{best:0,ok:0,n:0},fa:{best:0,ok:0,n:0},ry:{best:0,ok:0,n:0}},chant:{range:{lo:null,hi:null},ex:{}},last:0});
+let storageOK=true;
+function load(){
+  try{const raw=localStorage.getItem(KEY); if(raw){return merge(JSON.parse(raw));}}catch(e){storageOK=false;}
+  return def();
+}
+function merge(o){const d=def(); if(!o||typeof o!=="object") return d;
+  const r=Object.assign(d,o); r.train=Object.assign(def().train,o.train||{});
+  ["sol","fa","ry"].forEach(k=>{r.train[k]=Object.assign({best:0,ok:0,n:0},r.train[k]||{});});
+  r.done=r.done||{}; r.quiz=r.quiz||{}; r.notes=r.notes||{};
+  r.chant=Object.assign({range:{lo:null,hi:null},ex:{}},o.chant||{}); r.chant.range=Object.assign({lo:null,hi:null},r.chant.range||{}); r.chant.ex=r.chant.ex||{};
+  return r;}
+let S=load();
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S)); storageOK=true;}catch(e){storageOK=false;}
+  updateStatus(); updateProgress();
+}
+function updateStatus(){const el=document.getElementById("storeStatus"); if(!el) return;
+  el.classList.toggle("off",!storageOK);
+  el.querySelector("span").textContent=storageOK?"Progression enregistrée dans ce navigateur, sur cet appareil":"Ce navigateur bloque la sauvegarde (navigation privée ?) : la progression sera perdue en fermant la page";}
+function updateProgress(){const n=Object.keys(S.done).filter(k=>S.done[k]).length;
+  document.getElementById("progTxt").textContent=n+" / 10";
+  document.getElementById("progBar").style.width=(n*10)+"%";}
+
+/* ---------- Théorie & dessin ---------- */
+const LETTERS="CDEFGAB", SEMI=[0,2,4,5,7,9,11], FR=["do","ré","mi","fa","sol","la","si"];
+const ACCV={"#":1,"b":-1,"n":0}, ACCS={"#":"♯","b":"♭","n":"♮"};
+const W={w:58,h:44,q:34,e:28,s:24}, BEATS={w:4,h:2,q:1,e:.5,s:.25};
+const SH=[38,35,39,36,33,37,34], FLp=[34,37,33,36,32,35,31], SHL="FCGDAEB", FLL="BEADGCF";
+function parseP(p){const m=/^([A-G])(#|b|n)?(-?\d)$/.exec(p); const li=LETTERS.indexOf(m[1]), oct=+m[3];
+  return {li,acc:m[2]||"",oct,dia:li+oct*7,base:12*(oct+1)+SEMI[li]};}
+function keyMap(k){const m={}; for(let i=0;i<Math.abs(k);i++){ if(k>0) m[SHL[i]]=1; else m[FLL[i]]=-1;} return m;}
+const TREBLE="M13 31C9.5 31 8.5 26.5 12 24.5C16.5 22 21.5 26 20.5 31.5C19.5 37.5 11 39.5 6.5 35.5C2 31 3 23.5 8.5 18C13.5 13 18.5 9 18 1C17.5 -6 15 -11.5 12.5 -11.5C9 -11.5 8 -3 10 5L15.5 47C16 53 12 56 8.5 53.5";
+function clefSVG(c,x,T){
+  if(c==="fa") return `<g transform="translate(${x},${T})"><circle cx="5" cy="10" r="3.8" fill="currentColor"/><path d="M3 9.5C3 3 9 0 14 0.8C20 2 21.5 9 18.5 15.5C15.5 22 9 27.5 1.5 31.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="25" cy="5.2" r="1.9" fill="currentColor"/><circle cx="25" cy="14.8" r="1.9" fill="currentColor"/></g>`;
+  return `<g transform="translate(${x},${T})"><path d="${TREBLE}" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.2" cy="51.6" r="3.2" fill="currentColor"/>${c==="sol8"?'<text class="c8" x="11" y="67" text-anchor="middle">8</text>':""}</g>`;
+}
+function accSVG(a,x,y){
+  if(a==="#") return `<g transform="translate(${x},${y})"><path d="M-2.2 -11V12M2.4 -13V10" stroke="currentColor" stroke-width="1.3"/><path d="M-5 -2.2L5 -5.4V-2.6L-5 0.6ZM-5 5L5 1.8V4.6L-5 7.8Z" fill="currentColor"/></g>`;
+  if(a==="b") return `<g transform="translate(${x},${y})"><path d="M-3 -15V5" stroke="currentColor" stroke-width="1.4"/><path d="M-3 5C2 2.5 5 -1 3.6 -3.4C2.2 -5.6 -1 -4.4 -3 -1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></g>`;
+  return `<g transform="translate(${x},${y})"><path d="M-2.8 -12V5.5M2.8 -5.5V12" stroke="currentColor" stroke-width="1.3"/><path d="M-2.8 -2.6L2.8 -4.6V-2L-2.8 0ZM-2.8 4.6L2.8 2.6V5.2L-2.8 7.2Z" fill="currentColor"/></g>`;
+}
+const REST={
+  w:'<rect x="0" y="10" width="12" height="5" fill="currentColor"/>',
+  h:'<rect x="0" y="15" width="12" height="5" fill="currentColor"/>',
+  q:'<path d="M3.5 4.5L9.5 12.5L5 18.5L10.5 26C5 23.5 3 28 7.5 33" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>',
+  e:'<circle cx="4" cy="15" r="2.6" fill="currentColor"/><path d="M4 16.8C7 18.4 10 17.6 11.5 14L6.5 31" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  s:'<circle cx="5" cy="15" r="2.5" fill="currentColor"/><circle cx="3" cy="23" r="2.5" fill="currentColor"/><path d="M5 16.6C8 18 11 17.4 12.5 14L5.5 38M3 24.6C6 26 9 25.4 10.6 22" fill="none" stroke="currentColor" stroke-width="1.6"/>'
+};
+function head(x,y,d){
+  if(d==="w") return `<ellipse cx="${x}" cy="${y}" rx="7" ry="4.6" fill="none" stroke="currentColor" stroke-width="2.4"/>`;
+  if(d==="h") return `<ellipse cx="${x}" cy="${y}" rx="5.8" ry="4" transform="rotate(-22 ${x} ${y})" fill="none" stroke="currentColor" stroke-width="2"/>`;
+  return `<ellipse cx="${x}" cy="${y}" rx="6.2" ry="4.4" transform="rotate(-22 ${x} ${y})" fill="currentColor"/>`;
+}
+function ledgers(x,d,ref,yOf){let s="";
+  for(let k=ref-2;k>=d;k-=2) s+=`<line class="ln" x1="${x-10}" x2="${x+10}" y1="${yOf(k)}" y2="${yOf(k)}"/>`;
+  for(let k=ref+10;k<=d;k+=2) s+=`<line class="ln" x1="${x-10}" x2="${x+10}" y1="${yOf(k)}" y2="${yOf(k)}"/>`;
+  return s;}
+function flag(sx,ey,dir){const s=dir==="up"?1:-1;
+  return `<path d="M${sx} ${ey}C${sx+1} ${ey+7*s} ${sx+10} ${ey+9*s} ${sx+7} ${ey+20*s}" fill="none" stroke="currentColor" stroke-width="1.7"/>`;}
+function noteName(p){const q=parseP(p); return FR[q.li]+(q.acc&&q.acc!=="n"?ACCS[q.acc]:"");}
+
+let figSeq=0; const FIGS={};
+function staffSVG(spec){
+  const clef=spec.clef||"sol", ref=clef==="fa"?18:30, T=34, mid=ref+4, yOf=d=>T+40-(d-ref)*5;
+  const km=keyMap(spec.key||0), osh=clef==="sol8"?-12:0;
+  const P=[]; let x=6;
+  P.push(clefSVG(clef,x,T)); x+=clef==="fa"?36:30;
+  if(spec.key){const arr=spec.key>0?SH:FLp; for(let i=0;i<Math.abs(spec.key);i++){P.push(accSVG(spec.key>0?"#":"b",x+4,yOf(arr[i]-(clef==="fa"?14:0)))); x+=9;} x+=6;}
+  if(spec.time){P.push(`<text class="ts" x="${x+8}" y="${T+18}" text-anchor="middle">${spec.time[0]}</text><text class="ts" x="${x+8}" y="${T+38}" text-anchor="middle">${spec.time[1]}</text>`); x+=24;}
+  x+=16;
+  const notes=[], ev=[], bars=[]; let mAcc={}, tieEv=null;
+  spec.items.forEach((it,i)=>{
+    if(it.bar){const t=it.bar; const bx=t==="repS"?x-12:x-8; bars.push({x:bx,t});
+      if(t==="repS") ev.push({mark:"S"}); if(t==="repE") ev.push({mark:"E"});
+      mAcc={}; x+= t==="repS"?18:(t==="repE"?14:12); return;}
+    const dk=it.d||it.r, dur=BEATS[dk]*(it.dot?1.5:1);
+    if(it.r){notes.push({i,x,rest:it.r,it}); ev.push({m:null,dur,k:[i]}); x+=W[it.r]+(it.dot?8:0); tieEv=null; return;}
+    const p=parseP(it.n), showAcc=!!p.acc && !it.noAcc;
+    if(showAcc) x+=10;
+    let alt; if(p.acc){alt=ACCV[p.acc]; mAcc[p.dia]=alt;} else if(p.dia in mAcc) alt=mAcc[p.dia]; else alt=km[LETTERS[p.li]]||0;
+    const midi=p.base+alt+osh, y=yOf(p.dia);
+    notes.push({i,x,y,dia:p.dia,d:it.d,dot:it.dot,acc:showAcc?p.acc:"",midi,it,name:FR[p.li]+(alt===1?"♯":alt===-1?"♭":""),dir:it.stem||(p.dia>=mid?"down":"up")});
+    if(tieEv){tieEv.dur+=dur; tieEv.k.push(i);} else ev.push({m:midi,dur,k:[i]});
+    tieEv=it.tie?ev[ev.length-1]:null;
+    x+=W[it.d]+(it.dot?8:0);
+  });
+  // ligatures (barres de croches)
+  const groups=[]; let g=null;
+  notes.forEach(n=>{if(n.rest) return; const b=n.it.beam; if(b==="b"){g=[n];groups.push(g);} else if(g&&b){g.push(n); if(b==="e") g=null;}});
+  const BEAMS=[];
+  groups.forEach(g=>{const avg=g.reduce((s,n)=>s+n.dia,0)/g.length, dir=avg>=mid?"down":"up", ys=g.map(n=>n.y);
+    const by=dir==="up"?Math.min(...ys)-30:Math.max(...ys)+30; g.forEach(n=>{n.dir=dir;n.beamed=true;n.stemEnd=by;});
+    const x1=dir==="up"?g[0].x+5.6:g[0].x-5.6, x2=dir==="up"?g[g.length-1].x+5.6:g[g.length-1].x-5.6, th=4.5;
+    const y0=dir==="up"?by:by-th; BEAMS.push(`<rect x="${x1-.7}" y="${y0}" width="${x2-x1+1.4}" height="${th}" fill="currentColor"/>`);
+    if(g.every(n=>n.d==="s")) BEAMS.push(`<rect x="${x1-.7}" y="${dir==="up"?y0+7:y0-7}" width="${x2-x1+1.4}" height="${th}" fill="currentColor"/>`);
+  });
+  let maxB=T+40;
+  notes.forEach((n,idx)=>{
+    const cls=n.it.hi?"nt hi":"nt";
+    if(n.rest){P.push(`<g class="${cls}" data-k="${n.i}" transform="translate(${n.x-6},${T})"><rect class="hit" x="-6" y="1" width="24" height="38" rx="7" fill="transparent"/>${REST[n.rest]}</g>`); return;}
+    let s=`<g class="${cls}" data-k="${n.i}" data-m="${n.midi}"><rect class="hit" x="${n.x-13}" y="${n.y-13}" width="26" height="26" rx="8" fill="transparent"/>`;
+    s+=ledgers(n.x,n.dia,ref,yOf);
+    if(n.acc) s+=accSVG(n.acc,n.x-15,n.y);
+    s+=head(n.x,n.y,n.d);
+    if(n.d!=="w"){const up=n.dir==="up", sx=up?n.x+5.6:n.x-5.6, ey=n.stemEnd!==undefined?n.stemEnd:(up?n.y-34:n.y+34);
+      s+=`<line x1="${sx}" y1="${n.y+(up?-1:1)}" x2="${sx}" y2="${ey}" stroke="currentColor" stroke-width="1.4"/>`;
+      if(!n.beamed&&(n.d==="e"||n.d==="s")){s+=flag(sx,ey,n.dir); if(n.d==="s") s+=flag(sx,ey+(up?7:-7),n.dir);}
+      if(!up) maxB=Math.max(maxB,ey);}
+    maxB=Math.max(maxB,n.y+7);
+    if(n.dot){const onLine=(((n.dia-ref)%2)+2)%2===0; s+=`<circle cx="${n.x+11}" cy="${n.y+(onLine?-5:0)}" r="2" fill="currentColor"/>`;}
+    if(n.it.tie){const nx=notes[idx+1]; if(nx&&!nx.rest){const sg=n.dir==="up"?1:-1, y1=n.y+sg*7; s+=`<path d="M${n.x+5} ${y1}Q${(n.x+nx.x)/2} ${y1+sg*10} ${nx.x-5} ${y1}" fill="none" stroke="currentColor" stroke-width="1.6"/>`;}}
+    s+="</g>"; P.push(s);
+  });
+  P.push(...BEAMS);
+  bars.forEach(b=>{const x=b.x;
+    if(b.t==="end") P.push(`<line x1="${x-4}" x2="${x-4}" y1="${T}" y2="${T+40}" stroke="currentColor" stroke-width="1.2"/><rect x="${x-1}" y="${T}" width="4" height="40" fill="currentColor"/>`);
+    else if(b.t==="repS") P.push(`<rect x="${x}" y="${T}" width="4" height="40" fill="currentColor"/><line x1="${x+7}" x2="${x+7}" y1="${T}" y2="${T+40}" stroke="currentColor" stroke-width="1.2"/><circle cx="${x+12}" cy="${T+15}" r="2" fill="currentColor"/><circle cx="${x+12}" cy="${T+25}" r="2" fill="currentColor"/>`);
+    else if(b.t==="repE") P.push(`<circle cx="${x-9}" cy="${T+15}" r="2" fill="currentColor"/><circle cx="${x-9}" cy="${T+25}" r="2" fill="currentColor"/><line x1="${x-4}" x2="${x-4}" y1="${T}" y2="${T+40}" stroke="currentColor" stroke-width="1.2"/><rect x="${x-1}" y="${T}" width="4" height="40" fill="currentColor"/>`);
+    else P.push(`<line x1="${x}" x2="${x}" y1="${T}" y2="${T+40}" stroke="currentColor" stroke-width="1.2"/>`);
+  });
+  const last=bars.length&&spec.items[spec.items.length-1].bar?bars[bars.length-1].x+4:x-10;
+  const Wd=Math.max(last,spec.minW||0);
+  const hasLy=spec.items.some(i=>i.l), hasLb=spec.names||spec.toggle||spec.items.some(i=>i.t);
+  let ry=Math.max(T+40+24,maxB+17); const rowLy=ry; if(hasLy) ry+=20; const rowLb=ry;
+  notes.forEach(n=>{
+    if(n.it.l) P.push(`<text class="ly" x="${n.x}" y="${rowLy}" text-anchor="middle">${n.it.l}</text>`);
+    const lab=n.it.t!==undefined?n.it.t:((spec.names||spec.toggle)&&!n.rest?n.name:"");
+    if(lab) P.push(`<text class="lb${n.it.hi?" hi":""}${spec.toggle&&n.it.t===undefined?" nm":""}" x="${n.x}" y="${rowLb}" text-anchor="middle">${lab}</text>`);
+  });
+  const H=hasLb?rowLb+10:(hasLy?rowLy+10:Math.max(T+40+18,maxB+10));
+  let lines=""; for(let i=0;i<5;i++) lines+=`<line class="ln" x1="0" x2="${Wd}" y1="${T+i*10}" y2="${T+i*10}"/>`;
+  const svg=`<svg class="staff" viewBox="0 0 ${Wd} ${H}" style="max-width:${Math.round(Wd*1.35)}px;min-width:${Math.round(Math.min(Wd*.85,Wd))}px" role="img" aria-label="${spec.aria||"Portée musicale"}">${lines}${P.join("")}</svg>`;
+  return {svg,ev};
+}
+
+/* Partition à 4 voix (2 portées) */
+function satbSVG(spec){
+  const T=34, B=T+112, km=keyMap(spec.key||0), yS=d=>T+40-(d-30)*5, yB=d=>B+40-(d-18)*5;
+  const P=[]; let x=18; const midY=(T+B+40)/2;
+  P.push(`<path d="M11 ${T}C3 ${T+14} 10 ${midY-16} 4 ${midY}C10 ${midY+16} 3 ${B+26} 11 ${B+40}" fill="none" stroke="currentColor" stroke-width="2.4"/>`);
+  P.push(`<line x1="14" x2="14" y1="${T}" y2="${B+40}" stroke="currentColor" stroke-width="1.4"/>`);
+  P.push(clefSVG("sol",x,T),clefSVG("fa",x,B)); x+=36;
+  if(spec.key){for(let i=0;i<spec.key;i++){P.push(accSVG("#",x+4,yS(SH[i])),accSVG("#",x+4,yB(SH[i]-14))); x+=9;} x+=6;}
+  if(spec.time){[T,B].forEach(t=>P.push(`<text class="ts" x="${x+8}" y="${t+18}" text-anchor="middle">${spec.time[0]}</text><text class="ts" x="${x+8}" y="${t+38}" text-anchor="middle">${spec.time[1]}</text>`)); x+=24;}
+  x+=16;
+  const lists={s:[],a:[],t:[],b:[]}; let lastBar=0;
+  spec.cols.forEach((c,i)=>{
+    if(c.bar){const bx=x-8; lastBar=bx+4;
+      if(c.bar==="end") P.push(`<line x1="${bx-4}" x2="${bx-4}" y1="${T}" y2="${B+40}" stroke="currentColor" stroke-width="1.2"/><rect x="${bx-1}" y="${T}" width="4" height="${B+40-T}" fill="currentColor"/>`);
+      else P.push(`<line x1="${bx}" x2="${bx}" y1="${T}" y2="${B+40}" stroke="currentColor" stroke-width="1.2"/>`);
+      x+=12; return;}
+    const dur=BEATS[c.d];
+    ["s","a","t","b"].forEach(v=>{const p=parseP(c[v]), top=v==="s"||v==="a", ref=top?30:18, yf=top?yS:yB, y=yf(p.dia), up=v==="s"||v==="t";
+      const alt=p.acc?ACCV[p.acc]:(km[LETTERS[p.li]]||0), midi=p.base+alt; lists[v].push({m:midi,dur,k:[i]});
+      const sx=up?x+5.6:x-5.6, ey=up?y-32:y+32;
+      P.push(`<g class="nt" data-k="${i}" data-v="${v}" data-m="${midi}"><rect class="hit" x="${x-12}" y="${y-12}" width="24" height="24" rx="8" fill="transparent"/>${ledgers(x,p.dia,ref,yf)}${head(x,y,c.d)}<line x1="${sx}" y1="${y+(up?-1:1)}" x2="${sx}" y2="${ey}" stroke="currentColor" stroke-width="1.4"/></g>`);
+    });
+    if(c.l) P.push(`<text class="ly" x="${x}" y="${B+90}" text-anchor="middle">${c.l}</text>`);
+    x+=W[c.d]+6;
+  });
+  const Wd=lastBar||x; let lines="";
+  [T,B].forEach(t=>{for(let i=0;i<5;i++) lines+=`<line class="ln" x1="14" x2="${Wd}" y1="${t+i*10}" y2="${t+i*10}"/>`;});
+  const H=B+100;
+  return {svg:`<svg class="staff" viewBox="0 0 ${Wd} ${H}" style="max-width:${Math.round(Wd*1.3)}px;min-width:${Math.round(Wd*.82)}px" role="img" aria-label="Alléluia à quatre voix">${lines}${P.join("")}</svg>`,lists};
+}
+
+function gregSVG(){
+  const Y=[22,32,42,52]; let s=`<svg class="staff" viewBox="0 0 330 96" style="max-width:440px;min-width:300px" role="img" aria-label="Schéma de notation grégorienne">`;
+  Y.forEach(y=>s+=`<line class="ln" x1="0" x2="330" y1="${y}" y2="${y}"/>`);
+  s+=`<g class="hi"><rect x="10" y="14" width="3" height="16" fill="currentColor"/><rect x="13" y="14" width="7" height="6" fill="currentColor"/><rect x="13" y="24" width="7" height="6" fill="currentColor"/></g>`;
+  const sq=(x,y)=>`<rect x="${x-4}" y="${y-3.5}" width="8" height="7" fill="currentColor"/>`;
+  s+=sq(70,42)+sq(70,37)+`<line x1="74" x2="74" y1="37" y2="42" stroke="currentColor" stroke-width="1.4"/>`;
+  s+=sq(130,32)+sq(170,37)+sq(182,42)+sq(230,37)+sq(244,42);
+  s+=`<line x1="207" x2="207" y1="32" y2="42" stroke="currentColor" stroke-width="1.2"/>`;
+  s+=`<g class="hi"><rect x="306" y="30" width="5" height="5" fill="currentColor"/><line x1="311" x2="311" y1="33" y2="22" stroke="currentColor" stroke-width="1.2"/></g>`;
+  s+=`<text class="ly" x="72" y="72" text-anchor="middle">Ky-</text><text class="ly" x="130" y="72" text-anchor="middle">ri-</text><text class="ly" x="176" y="72" text-anchor="middle">e</text><text class="ly" x="237" y="72" text-anchor="middle">e-</text>`;
+  s+=`<text class="lb hi" x="15" y="90" text-anchor="middle">clé de do</text><text class="lb" x="150" y="90" text-anchor="middle">neumes (notes carrées)</text><text class="lb hi" x="306" y="90" text-anchor="middle">guidon</text></svg>`;
+  return s;
+}
+
+/* ---------- Son ---------- */
+let AC=null; const PLAY={nodes:[],timers:[]};
+function ac(){try{if(!AC){const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; AC=new C();} if(AC.state==="suspended") AC.resume(); return AC;}catch(e){return null;}}
+function tone(midi,t0,dur,vol){const c=ac(); if(!c) return; vol=vol||.22;
+  const f=440*Math.pow(2,(midi-69)/12), o=c.createOscillator(), o2=c.createOscillator(), g=c.createGain(), g2=c.createGain(), lp=c.createBiquadFilter(), lfo=c.createOscillator(), lg=c.createGain();
+  o.type="triangle"; o.frequency.value=f; o2.type="sine"; o2.frequency.value=f; g2.gain.value=.6;
+  lfo.frequency.value=5.2; lg.gain.value=f*.004; lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+  lp.type="lowpass"; lp.frequency.value=Math.min(3500,f*5);
+  o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(c.destination);
+  const a=.05, r=Math.min(.15,dur*.35);
+  PLAY.busyUntil=Math.max(PLAY.busyUntil||0,performance.now()+(t0-c.currentTime+dur)*1000+200); // le micro ignore le son joué par la page
+  g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(vol,t0+a); g.gain.setValueAtTime(vol,t0+Math.max(a,dur-r)); g.gain.linearRampToValueAtTime(0,t0+dur);
+  [o,o2,lfo].forEach(n=>{n.start(t0); n.stop(t0+dur+.05); PLAY.nodes.push(n);});
+}
+function click(t,first){const c=ac(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.frequency.value=first?1600:1050; o.type="sine";
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.002); g.gain.exponentialRampToValueAtTime(.001,t+.06); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.07);}
+function stopAll(){PLAY.nodes.forEach(n=>{try{n.stop();}catch(e){}}); PLAY.nodes=[]; PLAY.timers.forEach(clearTimeout); PLAY.timers=[]; PLAY.busyUntil=0;
+  document.querySelectorAll(".staff .on").forEach(e=>e.classList.remove("on"));}
+function expand(ev){const out=[]; let s=0; ev.forEach(e=>{if(e.mark==="S"){s=out.length;return;} if(e.mark==="E"){out.push(...out.slice(s));return;} out.push(e);}); return out;}
+function playFig(fid,which){
+  stopAll(); const F=FIGS[fid], c=ac(), fig=document.getElementById(fid); if(!F||!fig) return;
+  if(!c){noAudio(fig);return;}
+  const spb=60/(F.tempo||80), t0=c.currentTime+.12;
+  F.lists.forEach(L=>{const vol=which?(L.v===which?.26:(which==="mine+"?0:0)):L.vol; if(which&&L.v!==which) return;
+    let t=0; expand(L.ev).forEach(e=>{const d=e.dur*spb; if(e.m!=null) tone(e.m,t0+t,d*.93,vol||L.vol);
+      const sel=e.k.map(k=>`[data-k="${k}"]${L.v?`[data-v="${L.v}"]`:""}`).join(","); const els=[...fig.querySelectorAll(sel)];
+      PLAY.timers.push(setTimeout(()=>{els.forEach(x=>x.classList.add("on")); follow(els[0]);},(t+.12)*1000));
+      PLAY.timers.push(setTimeout(()=>els.forEach(x=>x.classList.remove("on")),(t+d+.08)*1000));
+      t+=d;});
+  });
+}
+function playMine(fid,v){ // ma voix en avant, les autres en fond
+  stopAll(); const F=FIGS[fid], c=ac(), fig=document.getElementById(fid); if(!c){noAudio(fig);return;}
+  const spb=60/(F.tempo||80), t0=c.currentTime+.12;
+  F.lists.forEach(L=>{let t=0; const mine=L.v===v; expand(L.ev).forEach(e=>{const d=e.dur*spb; tone(e.m,t0+t,d*.93,mine?.26:.05);
+    if(mine){const els=[...fig.querySelectorAll(`[data-k="${e.k[0]}"][data-v="${v}"]`)];
+      PLAY.timers.push(setTimeout(()=>{els.forEach(x=>x.classList.add("on")); follow(els[0]);},(t+.12)*1000));
+      PLAY.timers.push(setTimeout(()=>els.forEach(x=>x.classList.remove("on")),(t+d+.08)*1000));}
+    t+=d;});});
+}
+/* Sur petit écran, la portée défile pour garder la note jouée visible */
+function follow(el){if(!el) return; const sc=el.closest(".scroll"); if(!sc||sc.scrollWidth<=sc.clientWidth+2) return;
+  const r=el.getBoundingClientRect(), b=sc.getBoundingClientRect(), cx=r.left+r.width/2-b.left;
+  if(cx<b.width*.2||cx>b.width*.7){const left=sc.scrollLeft+cx-b.width*.35; const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+    try{sc.scrollTo({left,behavior:reduce?"auto":"smooth"});}catch(e){sc.scrollLeft=left;}}}
+function markOverflow(root){(root||document).querySelectorAll(".scroll").forEach(sc=>{
+  const upd=()=>{sc.classList.toggle("ovf",sc.scrollWidth>sc.clientWidth+2); sc.classList.toggle("end",sc.scrollLeft+sc.clientWidth>=sc.scrollWidth-4);};
+  upd(); if(!sc.dataset.ovf){sc.dataset.ovf=1; sc.addEventListener("scroll",upd,{passive:true});}});}
+let rsT=null; window.addEventListener("resize",()=>{clearTimeout(rsT); rsT=setTimeout(()=>markOverflow(),150);});
+function noAudio(fig){if(!fig) return; let m=fig.querySelector(".noaudio"); if(!m){m=document.createElement("p"); m.className="small muted noaudio"; m.textContent="Le son n’est pas disponible dans ce navigateur. Sur iPhone, vérifiez aussi que le mode silencieux est désactivé."; fig.appendChild(m);}}
+
+const ICON_PLAY='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"/></svg>';
+const ICON_STOP='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" rx="1"/></svg>';
+
+function figHTML(spec,caption){
+  const fid="f"+(++figSeq); const r=staffSVG(spec);
+  FIGS[fid]={lists:[{ev:r.ev,vol:.24}],tempo:spec.tempo||80};
+  const ctl=spec.noplay?"":`<div class="row"><button class="btn sm play" data-play="${fid}">${ICON_PLAY}Écouter</button><button class="btn sm" data-stop>${ICON_STOP}Arrêter</button>${spec.toggle?`<button class="btn sm" data-names="${fid}" aria-pressed="false">Afficher les noms</button>`:""}</div>`;
+  return `<figure class="fig" id="${fid}"><div class="scroll">${r.svg}</div><p class="swipe">Faites glisser la portée pour voir la suite →</p>${caption?`<figcaption>${caption}</figcaption>`:""}${ctl}</figure>`;
+}
+
+/* ---------- Exemples ---------- */
+const q=(n,o)=>Object.assign({n,d:"q"},o||{}), h=(n,o)=>Object.assign({n,d:"h"},o||{}), w=(n,o)=>Object.assign({n,d:"w"},o||{}), e=(n,o)=>Object.assign({n,d:"e"},o||{}), s16=(n,o)=>Object.assign({n,d:"s"},o||{});
+const BAR={bar:1}, END={bar:"end"};
+const EX={
+ "l1-lignes":[{items:[w("E4",{t:"1"}),w("G4",{t:"2"}),w("B4",{t:"3"}),w("D5",{t:"4"}),w("F5",{t:"5"}),BAR,w("F4",{t:"1",hi:1}),w("A4",{t:"2",hi:1}),w("C5",{t:"3",hi:1}),w("E5",{t:"4",hi:1}),END]},"À gauche, une note sur chacune des cinq lignes. À droite, en rouge, une note dans chacun des quatre interlignes."],
+ "l1-monte":[{items:[q("C4"),q("D4"),q("E4"),q("F4"),q("G4"),q("A4"),q("B4"),q("C5"),END]},"Du grave vers l’aigu. Touchez une note pour l’entendre seule."],
+ "l1-sol":[{items:[w("G4",{hi:1,t:"sol"})],noplay:0},"La <b>clé de sol</b> s’enroule autour de la 2e ligne : une note sur cette ligne s’appelle <i>sol</i>."],
+ "l1-fa":[{clef:"fa",items:[w("F3",{hi:1,t:"fa"})]},"La <b>clé de fa</b> encadre la 4e ligne de ses deux points : une note sur cette ligne s’appelle <i>fa</i>."],
+ "l1-tenor":[{clef:"sol8",items:[q("G4",{t:"sol"}),q("A4"),q("B4"),q("C5"),h("D5"),END]},"Clé de sol des ténors, avec le petit 8 : la lecture est la même, mais le son est une octave plus grave que pour les sopranos. Écoutez."],
+ "l2-echelle":[{names:1,items:[q("C4"),q("D4"),q("E4"),q("F4"),q("G4",{hi:1}),q("A4"),q("B4"),q("C5"),q("D5"),q("E5"),q("F5"),q("G5")]},"Chaque cran sur la portée correspond à la note suivante. Le sol de la clé est en rouge."],
+ "l2-lignes":[{names:1,items:[w("E4"),w("G4"),w("B4"),w("D5"),w("F5")]},"Sur les lignes : mi, sol, si, ré, fa."],
+ "l2-inter":[{names:1,items:[w("F4"),w("A4"),w("C5"),w("E5")]},"Dans les interlignes : fa, la, do, mi."],
+ "l2-reperes":[{items:[w("C4",{hi:1,t:"do central"}),w("G4",{hi:1,t:"sol (clé)"}),w("C5",{hi:1,t:"do"})]},"Trois repères : le do central sur sa petite ligne sous la portée, le sol de la clé, le do du 3e interligne."],
+ "l2-pas":[{items:[q("G4",{t:"sol"}),q("A4",{t:"la"}),q("B4",{t:"si"}),q("C5",{t:"do"}),BAR,q("C5",{t:"do",hi:1}),q("A4",{t:"la",hi:1}),q("F4",{t:"fa",hi:1}),q("D4",{t:"ré",hi:1}),END]},"Mesure 1 : mouvement conjoint, on passe d’une note à sa voisine. Mesure 2 : mouvement disjoint, de ligne à ligne ou d’interligne à interligne, on saute une note à chaque fois."],
+ "l2-clair":[{time:[4,4],toggle:1,tempo:96,items:[q("C4",{l:"Au"}),q("C4",{l:"clair"}),q("C4",{l:"de"}),q("D4",{l:"la"}),BAR,h("E4",{l:"lu-"}),h("D4",{l:"ne,"}),BAR,q("C4",{l:"mon"}),q("E4",{l:"a-"}),q("D4",{l:"mi"}),q("D4",{l:"Pier-"}),BAR,w("C4",{l:"rot"}),END]},"Un air connu de tous, pour vérifier votre lecture à l’oreille."],
+ "l3-valeurs":[{items:[w("G4",{t:"4 temps"}),h("G4",{t:"2"}),q("G4",{t:"1"}),e("G4",{t:"½"}),s16("G4",{t:"¼"})]},"Ronde, blanche, noire, croche, double croche : chaque figure dure deux fois moins longtemps que la précédente."],
+ "l3-croches":[{time:[4,4],items:[e("G4",{beam:"b",t:"½"}),e("A4",{beam:"e",t:"½"}),e("B4",{beam:"b"}),e("G4",{beam:"e"}),s16("G4",{beam:"b",t:"¼"}),s16("A4",{beam:"m"}),s16("B4",{beam:"m"}),s16("C5",{beam:"e"}),q("D5"),END]},"Croches reliées par une barre, puis quatre doubles croches reliées par deux barres. Chaque groupe vaut une noire."],
+ "l3-point":[{time:[4,4],items:[h("G4",{dot:1,t:"3"}),q("A4",{t:"1"}),BAR,q("B4",{dot:1,t:"1 ½"}),e("A4",{t:"½"}),h("G4",{t:"2"}),END]},"La blanche pointée dure 3 temps ; la noire pointée, un temps et demi."],
+ "l3-liaison":[{time:[4,4],items:[q("E4"),q("F4"),h("G4",{tie:1,hi:1}),BAR,q("G4",{hi:1}),q("F4"),h("E4"),END]},"Le sol en rouge se chante une seule fois et se tient 3 temps, par-dessus la barre de mesure."],
+ "l3-rythme":[{time:[4,4],tempo:72,items:[q("G4",{t:"ta"}),q("G4",{t:"ta"}),h("G4",{t:"taa"}),BAR,e("G4",{beam:"b",t:"ti"}),e("G4",{beam:"e",t:"ti"}),e("G4",{beam:"b",t:"ti"}),e("G4",{beam:"e",t:"ti"}),q("G4",{t:"ta"}),q("G4",{t:"ta"}),BAR,w("G4",{t:"taaaa"}),END]},"Parlez ce rythme en tapant le temps du pied, puis écoutez pour vérifier."],
+ "l4-silences":[{noplay:1,items:[{r:"w",t:"pause"},{r:"h",t:"demi-pause"},{r:"q",t:"soupir"},{r:"e",t:"½ soupir"},{r:"s",t:"¼ soupir"}],minW:300},"Les cinq silences, du plus long au plus court."],
+ "l4-pause":[{noplay:1,items:[{r:"w",hi:1,t:"pause : pend"},{r:"w"},{r:"h",hi:1,t:"demi-pause : posée"},{r:"h"}],minW:250},"La pause pend sous la 4e ligne ; la demi-pause est posée sur la 3e ligne."],
+ "l4-rythme":[{time:[4,4],tempo:80,items:[q("G4"),{r:"q",hi:1},q("A4"),{r:"q",hi:1},BAR,h("B4"),{r:"h",hi:1},BAR,q("G4"),e("A4",{beam:"b"}),e("B4",{beam:"e"}),{r:"e",hi:1},e("A4"),q("G4"),BAR,{r:"w",hi:1},END]},"Les silences sont en rouge. La pulsation ne s’arrête jamais : comptez-les."],
+ "l5-44":[{time:[4,4],items:[q("G4",{t:"1"}),q("A4",{t:"2"}),q("B4",{t:"3"}),q("G4",{t:"4"}),BAR,h("A4",{t:"1 2"}),h("B4",{t:"3 4"}),BAR,w("G4",{t:"1 2 3 4"}),END]},"Mesure à 4 temps : quatre noires par mesure, ou leur équivalent."],
+ "l5-34":[{time:[3,4],items:[h("G4",{t:"1 2"}),q("B4",{t:"3"}),BAR,q("D5",{dot:1,t:"1 (2)"}),e("C5",{t:"et"}),q("B4",{t:"3"}),BAR,h("G4",{dot:1,t:"1 2 3"}),END]},"Mesure à 3 temps. La blanche pointée remplit à elle seule une mesure."],
+ "l5-levee":[{time:[3,4],items:[q("D4",{hi:1,t:"3",l:"Je"}),BAR,q("G4",{t:"1",l:"te"}),q("G4",{t:"2",l:"sa-"}),q("A4",{t:"3",l:"lu-"}),BAR,h("B4",{dot:1,t:"1 2 3",l:"e"}),END]},"La première note, en rouge, est une levée : elle tombe sur le 3e temps, avant la première barre de mesure. Le premier temps fort arrive juste après."],
+ "l6-echelle":[{clef:"fa",names:1,items:[q("G2"),q("A2"),q("B2"),q("C3"),q("D3"),q("E3"),q("F3",{hi:1}),q("G3"),q("A3"),q("B3"),q("C4")]},"Même principe qu’en clé de sol : un cran = une note. Le fa de la clé est en rouge."],
+ "l6-lignes":[{clef:"fa",names:1,items:[w("G2"),w("B2"),w("D3"),w("F3"),w("A3")]},"Sur les lignes : sol, si, ré, fa, la."],
+ "l6-inter":[{clef:"fa",names:1,items:[w("A2"),w("C3"),w("E3"),w("G3")]},"Dans les interlignes : la, do, mi, sol."],
+ "l6-reperes":[{clef:"fa",items:[w("C3",{hi:1,t:"do"}),w("F3",{hi:1,t:"fa (clé)"}),w("C4",{hi:1,t:"do central"})]},"Trois repères en clé de fa : le do du 2e interligne, le fa de la clé et le do central, sur sa petite ligne au-dessus de la portée."],
+ "l6-lecture":[{clef:"fa",time:[4,4],toggle:1,items:[q("G2"),q("B2"),q("D3"),q("B2"),BAR,q("C3"),q("E3"),h("D3"),BAR,q("A2"),q("C3"),q("B2"),q("A2"),BAR,w("G2"),END]},"Nommez chaque note, puis vérifiez avec « Afficher les noms »."],
+ "l7-signes":[{items:[h("F4",{t:"fa"}),h("F#4",{t:"fa♯",hi:1}),BAR,h("B4",{t:"si"}),h("Bb4",{t:"si♭",hi:1}),BAR,h("Bb4",{t:"si♭"}),h("Bn4",{t:"si♮",hi:1}),END]},"Le dièse monte d’un demi-ton, le bémol descend d’un demi-ton, le bécarre ramène la note naturelle."],
+ "l7-mesure":[{time:[4,4],items:[q("G4"),q("F#4",{t:"fa♯",hi:1}),q("E4"),q("F4",{t:"fa♯ aussi",hi:1}),BAR,h("F4",{t:"fa"}),h("G4"),END]},"Le dièse écrit dans la 1re mesure vaut aussi pour le deuxième fa de cette mesure. Après la barre, il ne compte plus."],
+ "l7-armure":[{key:1,time:[4,4],items:[q("G4"),q("A4"),q("B4"),q("C5"),BAR,q("D5"),q("E5"),q("F5",{hi:1,t:"fa♯"}),q("G5"),BAR,q("F4",{hi:1,t:"fa♯"}),q("E4"),h("D4"),END]},"Un dièse à l’armure, sur la ligne du fa : tous les fa du chant sont dièse, à toutes les hauteurs."],
+ "l7-armure-b":[{key:-1,time:[4,4],items:[q("F4"),q("G4"),q("A4"),q("B4",{hi:1,t:"si♭"}),BAR,h("C5"),h("A4"),BAR,w("F4"),END]},"Un bémol à l’armure, sur la ligne du si : tous les si sont bémol."],
+ "l9-reprise":[{time:[4,4],items:[{bar:"repS"},q("G4"),q("A4"),q("B4"),q("G4"),BAR,h("A4"),h("D4"),{bar:"repE"},q("B4"),q("A4"),h("G4"),END]},"Le passage entre les deux barres de reprise se chante deux fois, puis on continue. Écoutez pour suivre le chemin."]
+};
+const SATB={key:1,time:[4,4],cols:[
+  {s:"B4",a:"G4",t:"D4",b:"G3",d:"q",l:"Al-"},{s:"C5",a:"G4",t:"E4",b:"C3",d:"q",l:"lé-"},{s:"D5",a:"G4",t:"B3",b:"G3",d:"q",l:"lu-"},{s:"D5",a:"F4",t:"A3",b:"D3",d:"q",l:"ia,"},{bar:1},
+  {s:"E5",a:"G4",t:"C4",b:"C3",d:"q",l:"al-"},{s:"D5",a:"G4",t:"B3",b:"G2",d:"q",l:"lé-"},{s:"C5",a:"E4",t:"A3",b:"A2",d:"q",l:"lu-"},{s:"B4",a:"D4",t:"G3",b:"B2",d:"q",l:"ia,"},{bar:1},
+  {s:"A4",a:"F4",t:"D4",b:"D3",d:"h",l:"A-"},{s:"G4",a:"D4",t:"B3",b:"G2",d:"h",l:"men."},{bar:"end"}]};
+const VOICES={soprano:"s",alto:"a",tenor:"t",basse:"b"}, VNAME={s:"Soprano",a:"Alto",t:"Ténor",b:"Basse"};
+
+/* ---------- Leçons ---------- */
+const ex=k=>`<div class="ex" data-ex="${k}"></div>`;
+const rub=items=>`<aside class="rub"><p class="rub-t">À faire sur une partition de la chorale</p><ol>${items.map(i=>`<li>${i}</li>`).join("")}</ol></aside>`;
+const tbl=(head,rows,symCol)=>`<div class="tw"><table><thead><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===symCol?' class="sym"':""}>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+const NOTE_OPTS=FR.slice();
+const nq=(clef,n,a,expl)=>({q:"Quelle est cette note ?",ex:{clef,items:[{n,d:"w"}],noplay:1},o:NOTE_OPTS,a,e:expl});
+
+const LESSONS=[
+{id:1,titre:"La portée et les clés",but:"Savoir où regarder : lignes, interlignes et clé de votre voix.",html:`
+<p class="lead">Avant de chanter une seule note, il faut savoir où regarder. Cette leçon vous apprend à vous repérer sur la page.</p>
+<h3>La portée</h3>
+<p>La musique s’écrit sur une <b>portée</b> : cinq lignes horizontales. On les compte <b>de bas en haut</b> : la ligne 1 est en bas, la ligne 5 en haut. Les espaces entre deux lignes s’appellent des <b>interlignes</b> ; il y en a quatre.</p>
+${ex("l1-lignes")}
+<p>Une note est soit <b>sur une ligne</b> (la ligne la traverse en son milieu), soit <b>dans un interligne</b> (elle est coincée entre deux lignes). Quand une note sort de la portée, on lui ajoute de petites <b>lignes supplémentaires</b>.</p>
+<h3>Haut = aigu, bas = grave</h3>
+<p>Plus une note est haute sur la portée, plus le son est aigu. Écoutez cette montée.</p>
+${ex("l1-monte")}
+<h3>La clé</h3>
+<p>Au début de chaque portée se trouve une <b>clé</b>. Elle donne le nom d’une ligne ; toutes les autres notes s’en déduisent.</p>
+<div class="pair">${ex("l1-sol")}${ex("l1-fa")}</div>
+<h3>Quelle clé pour quelle voix ?</h3>
+${tbl(["Voix","Clé habituelle"],[["Soprano","Clé de sol"],["Alto","Clé de sol"],["Ténor","Clé de sol avec un petit 8 dessous, ou clé de fa dans les recueils à deux portées"],["Basse","Clé de fa"]])}
+${ex("l1-tenor")}
+<div class="w-sing" data-sx="echo"></div>
+${rub(["Prenez un chant de la chorale et trouvez votre portée. Le nom de la voix est souvent écrit au début : S, A, T, B.","Quelle clé voyez-vous au début de votre portée ?","Posez le doigt sur trois notes et dites pour chacune « ligne » ou « interligne »."])}`,
+quiz:[
+ {q:"Combien de lignes compte une portée ?",o:["4","5","6"],a:1,e:"Cinq lignes, et quatre interlignes entre elles."},
+ {q:"Dans quel sens compte-t-on les lignes ?",o:["De haut en bas","De bas en haut"],a:1,e:"La ligne 1 est la plus basse."},
+ {q:"Cette note est-elle sur une ligne ou dans un interligne ?",ex:{items:[{n:"A4",d:"w"}],noplay:1},o:["Sur une ligne","Dans un interligne"],a:1,e:"Elle est coincée entre la 2e et la 3e ligne."},
+ {q:"Sur quelle ligne la clé de sol place-t-elle la note sol ?",o:["La 1re","La 2e","La 4e"],a:1,e:"La spirale de la clé s’enroule autour de la 2e ligne."},
+ {q:"Le petit 8 sous la clé de sol des ténors signifie…",o:["chanter une octave plus bas que ce qui est écrit","chanter 8 temps","chanter plus fort"],a:0,e:"Les ténors lisent comme en clé de sol, mais sonnent une octave plus bas."}]},
+
+{id:2,titre:"Lire les notes en clé de sol",but:"Nommer n’importe quelle note en clé de sol à partir de trois repères.",html:`
+<p class="lead">Les notes n’ont que sept noms. Avec la clé de sol et trois repères, vous pouvez nommer toutes les notes de la portée.</p>
+<h3>Sept noms qui tournent en boucle</h3>
+<p><b>do, ré, mi, fa, sol, la, si</b>, puis on recommence au do, une <b>octave</b> plus haut. Récitez la suite en montant et en descendant jusqu’à ce qu’elle vienne toute seule : <i>do ré mi fa sol la si do</i>, puis <i>do si la sol fa mi ré do</i>.</p>
+<p>Sur la portée, chaque cran (ligne, interligne, ligne…) correspond à la note suivante.</p>
+${ex("l2-echelle")}
+<h3>Les lignes et les interlignes</h3>
+<div class="pair">${ex("l2-lignes")}${ex("l2-inter")}</div>
+<p class="mnemo">Pour les lignes : « <b>Mi</b>chel <b>Sol</b>licite <b>Si</b>mon <b>Ré</b>veillé <b>Fa</b>cilement ».<br>Pour les interlignes : <b>FA-LA-DO-MI</b>.</p>
+<h3>Trois repères à connaître par cœur</h3>
+${ex("l2-reperes")}
+<p>Pour toute autre note, partez du repère le plus proche et comptez les crans en récitant les noms.</p>
+<h3>Pas et sauts</h3>
+<p>Quand la mélodie passe d’une ligne à l’interligne voisin, c’est la note voisine : le mouvement est <b>conjoint</b>. Quand elle va de ligne en ligne, elle saute une note : le mouvement est <b>disjoint</b>. Lire les écarts aide autant que lire les noms.</p>
+${ex("l2-pas")}
+<h3>Premier déchiffrage</h3>
+<p>Nommez à voix haute chaque note de cet air, puis vérifiez avec « Afficher les noms ». Écoutez ensuite pour comparer avec ce que vous connaissez.</p>
+${ex("l2-clair")}
+<p>Passez maintenant de la lecture à la voix : chantez ce que vous venez de lire.</p>
+<div class="w-sing" data-sx="gamme"></div>
+<div class="w-sing" data-sx="clair"></div>
+<p>Pour progresser vite, faites l’<a href="#entrainement">entraînement « Lire les notes »</a> quelques minutes chaque jour.</p>
+${rub(["Nommez les dix premières notes de votre voix sur un chant de la chorale. Si vous êtes en clé de fa, faites l’exercice sur la portée des sopranos ; la leçon 6 vous apprendra la vôtre.","Si besoin, écrivez les noms au crayon sous les notes, et gommez-les la semaine suivante."])}`,
+quiz:[nq("sol","G4",4,"Sur la 2e ligne, la ligne de la clé."),nq("sol","E4",2,"Première ligne : mi (« Michel »)."),nq("sol","C5",0,"3e interligne : do (FA-LA-DO-MI)."),nq("sol","F5",3,"5e ligne : fa (« Facilement »)."),nq("sol","C4",0,"Le do central, sur sa petite ligne sous la portée."),
+ {q:"En montant, quelle note vient après si ?",o:["la","do","ré"],a:1,e:"Après si, on recommence au do, une octave plus haut."}]},
+
+{id:3,titre:"La durée des notes",but:"Savoir combien de temps tenir chaque note.",html:`
+<p class="lead">La position d’une note dit laquelle chanter ; sa forme dit combien de temps la tenir.</p>
+<h3>Le temps</h3>
+<p>La musique s’appuie sur une <b>pulsation</b> régulière, comme le tic-tac d’une horloge. Chaque battement est un <b>temps</b>. Les durées se comptent en temps.</p>
+${ex("l3-valeurs")}
+${tbl(["Figure","Comment la reconnaître","Durée"],[["Ronde","tête vide, sans hampe","4 temps"],["Blanche","tête vide avec une hampe","2 temps"],["Noire","tête pleine avec une hampe","1 temps"],["Croche","noire avec un crochet","½ temps"],["Double croche","noire avec deux crochets","¼ de temps"]])}
+<p>La <b>hampe</b> (le bâton) monte ou descend selon la place de la note : cela ne change rien à la durée.</p>
+<h3>Croches groupées</h3>
+<p>Plusieurs croches qui se suivent sont souvent reliées par une barre au lieu d’avoir chacune un crochet. Deux croches reliées valent une noire ; quatre doubles croches reliées par deux barres aussi.</p>
+${ex("l3-croches")}
+<h3>Le point</h3>
+<p>Un point à droite de la note ajoute la moitié de sa durée : blanche pointée = 2 + 1 = 3 temps ; noire pointée = 1 + ½ = 1 temps et demi.</p>
+${ex("l3-point")}
+<h3>La liaison</h3>
+<p>Un arc qui relie deux notes <b>de même hauteur</b> les soude : on chante une seule note, tenue pendant la durée totale.</p>
+${ex("l3-liaison")}
+<p>Dans les chants, un arc entre des notes de hauteurs différentes indique en général qu’une même syllabe se chante sur plusieurs notes. On appelle cela un <b>mélisme</b> ; il y en a beaucoup dans les Gloria et les Alléluia.</p>
+<h3>Dire le rythme</h3>
+<p>On peut parler un rythme : « ta » pour une noire, « taa » pour une blanche, « ti-ti » pour deux croches. Tapez une pulsation régulière du pied, parlez le rythme, puis écoutez.</p>
+${ex("l3-rythme")}
+<div class="w-sing" data-sx="tenue"></div>
+${rub(["Trouvez sur votre partition une blanche, une noire, deux croches reliées et une note pointée.","Parlez le rythme de la première ligne de votre voix en « ta / ti-ti », sans chanter les notes."])}`,
+quiz:[
+ {q:"Combien de temps dure une blanche ?",o:["1","2","4"],a:1,e:"La blanche vaut 2 temps, soit deux noires."},
+ {q:"Combien de croches faut-il pour faire une noire ?",o:["1","2","4"],a:1,e:"Une croche dure un demi-temps."},
+ {q:"Combien de temps dure cette note ?",ex:{items:[{n:"G4",d:"h",dot:1}],noplay:1},o:["2","3","4"],a:1,e:"Blanche pointée : 2 + 1 = 3 temps."},
+ {q:"Combien de noires dans une ronde ?",o:["2","3","4"],a:2,e:"La ronde dure 4 temps."},
+ {q:"Deux notes de même hauteur reliées par un arc…",o:["se chantent séparément","se chantent comme une seule note tenue"],a:1,e:"C’est une liaison de prolongation : on ne réattaque pas la seconde note."}]},
+
+{id:4,titre:"Les silences",but:"Reconnaître les silences, les compter et y respirer.",html:`
+<p class="lead">En chorale, les silences comptent autant que les notes : c’est là que l’on respire, et c’est là qu’une voix se tait pendant que les autres chantent.</p>
+<h3>Les cinq silences</h3>
+${ex("l4-silences")}
+${tbl(["Silence","Durée","Équivaut à"],[["Pause","4 temps","une ronde"],["Demi-pause","2 temps","une blanche"],["Soupir","1 temps","une noire"],["Demi-soupir","½ temps","une croche"],["Quart de soupir","¼ de temps","une double croche"]])}
+<h3>Pause ou demi-pause ?</h3>
+<p>Elles se ressemblent : deux petits rectangles noirs. La <b>pause</b>, plus lourde, <b>pend sous la 4e ligne</b>. La <b>demi-pause</b>, plus légère, <b>est posée sur la 3e ligne</b> comme un chapeau.</p>
+${ex("l4-pause")}
+<p>Une pause seule dans une mesure signifie aussi « toute la mesure en silence », quelle que soit sa longueur.</p>
+<h3>Compter les silences</h3>
+<p>Pendant un silence, la pulsation continue : on compte dans sa tête. Écoutez et suivez.</p>
+${ex("l4-rythme")}
+<h3>Plusieurs mesures de silence</h3>
+<p>Quand votre voix se tait longtemps, la partition montre un rectangle épais avec un nombre au-dessus : c’est le nombre de mesures à compter avant de reprendre. Comptez-les sur vos doigts : <i>1</i>-2-3-4, <i>2</i>-2-3-4, <i>3</i>-2-3-4…</p>
+<h3>Respirer</h3>
+<p>Une petite virgule au-dessus de la portée indique un endroit pour respirer. Sans virgule, respirez sur les silences ou à la fin d’une phrase du texte, jamais au milieu d’un mot.</p>
+${rub(["Repérez tous les silences de votre voix sur un chant.","Marquez au crayon une petite virgule là où vous allez respirer, puis demandez au chef si ces respirations conviennent."])}`,
+quiz:[
+ {q:"Comment s’appelle ce silence ?",ex:{items:[{r:"q"}],noplay:1,minW:110},o:["Soupir","Demi-soupir","Pause"],a:0,e:"Le soupir dure 1 temps, comme une noire."},
+ {q:"Le soupir dure autant que…",o:["une blanche","une noire","une croche"],a:1,e:"1 temps."},
+ {q:"Ce rectangle pend sous la 4e ligne. C’est…",ex:{items:[{r:"w"}],noplay:1,minW:110},o:["une pause (4 temps)","une demi-pause (2 temps)"],a:0,e:"La pause pend ; la demi-pause est posée."},
+ {q:"Pendant un silence, la pulsation…",o:["s’arrête","continue : on compte dans sa tête"],a:1,e:"Sinon, on repart trop tôt ou trop tard."},
+ {q:"Où respirer quand rien n’est indiqué ?",o:["Au milieu d’un mot","Sur un silence ou en fin de phrase"],a:1,e:"On respire avec le sens du texte."}]},
+
+{id:5,titre:"La mesure et la pulsation",but:"Compter les temps, repérer le temps fort et suivre le geste du chef.",html:`
+<p class="lead">Les notes se rangent dans des cases de même durée : les mesures. C’est ce qui permet à toute la chorale de rester ensemble.</p>
+<h3>Barres de mesure</h3>
+<p>Des traits verticaux découpent la portée en <b>mesures</b>. Une double barre, dont la seconde est épaisse, marque la fin du chant.</p>
+<h3>Le chiffrage</h3>
+<p>Après la clé, deux chiffres empilés indiquent la mesure. Le chiffre du haut donne le <b>nombre de temps</b> par mesure. Celui du bas donne <b>la figure qui vaut un temps</b> : 4 pour la noire, 2 pour la blanche, 8 pour la croche.</p>
+${tbl(["Chiffrage","Lecture"],[["4/4 (ou C)","4 temps, un temps = une noire"],["3/4","3 temps de noire"],["2/4","2 temps de noire"],["6/8","2 temps, chacun vaut une noire pointée (3 croches)"]])}
+${ex("l5-44")}
+${ex("l5-34")}
+<h3>Le temps fort</h3>
+<p>Le premier temps de chaque mesure est le <b>temps fort</b> : c’est là que tombe naturellement l’accent du texte. En 4/4, le 3e temps est légèrement appuyé ; les autres sont faibles.</p>
+<h3>La levée</h3>
+<p>Beaucoup de cantiques commencent <b>avant</b> le premier temps fort : la première mesure est incomplète. C’est une <b>levée</b> (ou anacrouse). Comptez la mesure entière dans votre tête et entrez au bon moment.</p>
+${ex("l5-levee")}
+<h3>Les gestes du chef</h3>
+<p>Le chef « bat la mesure ». Le premier temps est toujours un geste vers le bas.</p>
+${tbl(["Mesure","Geste"],[["2 temps","bas, haut"],["3 temps","bas, droite, haut"],["4 temps","bas, gauche, droite, haut"]])}
+<h3>Le métronome</h3>
+<p>Choisissez 4 temps et battez la mesure avec la main en suivant les clics. Le premier temps est plus aigu.</p>
+<div class="w-metro"></div>
+${rub(["Trouvez le chiffrage de trois chants de votre répertoire.","L’un d’eux commence-t-il par une levée ? Sur quel temps ?"])}`,
+quiz:[
+ {q:"En 3/4, combien de temps par mesure ?",o:["3","4","7"],a:0,e:"Le chiffre du haut donne le nombre de temps."},
+ {q:"Dans le chiffrage 4/4, que signifie le 4 du bas ?",o:["Qu’un temps vaut une noire","Qu’il y a 4 mesures","Qu’on chante à 4 voix"],a:0,e:"4 = noire, 2 = blanche, 8 = croche."},
+ {q:"Quel est le temps fort de la mesure ?",o:["Le premier","Le dernier"],a:0,e:"Le premier temps, juste après la barre de mesure."},
+ {q:"Une levée, c’est…",o:["une ou plusieurs notes avant le premier temps fort","un silence au début du chant"],a:0,e:"La première mesure est alors incomplète."},
+ {q:"Le premier temps battu par le chef va…",o:["vers le haut","vers le bas","vers la gauche"],a:1,e:"Toujours vers le bas, quelle que soit la mesure."}]},
+
+{id:6,titre:"La clé de fa",but:"Lire les notes des voix graves.",html:`
+<p class="lead">Les basses lisent en clé de fa, et les ténors aussi dans les recueils à deux portées. Les autres voix ont intérêt à la connaître pour suivre l’ensemble.</p>
+<h3>Le repère : la 4e ligne</h3>
+<p>Les deux points de la clé de fa encadrent la 4e ligne. Une note posée sur cette ligne s’appelle <b>fa</b>. Le reste se déduit en comptant les crans, exactement comme en clé de sol.</p>
+${ex("l6-echelle")}
+<h3>Lignes et interlignes</h3>
+<div class="pair">${ex("l6-lignes")}${ex("l6-inter")}</div>
+<p class="mnemo">Pour les lignes : « <b>Sol</b>ange <b>Si</b>ffle <b>Ré</b>gulièrement <b>Fa</b>ce au <b>La</b>c ».<br>Pour les interlignes : <b>LA-DO-MI-SOL</b>.</p>
+<h3>Le pont entre les deux clés</h3>
+<p>Le <b>do central</b> est le même son dans les deux clés : sur une petite ligne sous la portée en clé de sol, sur une petite ligne au-dessus de la portée en clé de fa. C’est là que les deux portées d’un recueil se rejoignent.</p>
+${ex("l6-reperes")}
+<p>Astuce : à position égale, la note en clé de fa porte le nom situé <b>deux crans plus haut</b> que celle de la clé de sol. La 1re ligne est mi en clé de sol, sol en clé de fa.</p>
+<h3>Lecture</h3>
+${ex("l6-lecture")}
+<p>Entraînez-vous ensuite avec l’<a href="#entrainement">entraînement « Lire les notes »</a> en choisissant la clé de fa.</p>
+${rub(["Basses, et ténors en clé de fa : nommez les notes de votre voix sur un chant.","Sopranos et altos : nommez les cinq premières notes de la basse de ce même chant."])}`,
+quiz:[nq("fa","F3",3,"Sur la 4e ligne, la ligne de la clé."),nq("fa","G2",4,"1re ligne : sol (« Solange »)."),nq("fa","C4",0,"Le do central, sur sa petite ligne au-dessus de la portée."),nq("fa","A2",5,"1er interligne : la (LA-DO-MI-SOL)."),nq("fa","D3",1,"3e ligne : ré (« Régulièrement »)."),
+ {q:"En clé de fa, la note sur la 1re ligne s’appelle…",o:["mi","sol","fa"],a:1,e:"Deux crans plus haut que le mi de la clé de sol."}]},
+
+{id:7,titre:"Dièses, bémols et armure",but:"Comprendre les altérations et savoir lesquelles s’appliquent.",html:`
+<p class="lead">Entre certaines notes voisines existe une note intermédiaire. Les altérations permettent de l’écrire.</p>
+<h3>Tons et demi-tons</h3>
+<p>Sur un clavier, deux touches voisines (blanche ou noire) sont séparées d’un <b>demi-ton</b>. Entre mi et fa, et entre si et do, il n’y a pas de touche noire : ces notes ne sont qu’à un demi-ton. Entre les autres notes voisines, il y a un <b>ton</b>. Essayez :</p>
+<div class="w-kb"></div>
+<h3>Les trois signes</h3>
+${tbl(["Signe","Nom","Effet"],[["♯","dièse","monte la note d’un demi-ton"],["♭","bémol","descend la note d’un demi-ton"],["♮","bécarre","annule le dièse ou le bémol"]],0)}
+${ex("l7-signes")}
+<h3>Combien de temps dure une altération ?</h3>
+<p>Une altération écrite devant une note vaut pour cette note et pour toutes les notes <b>à la même place</b> qui suivent, <b>jusqu’à la fin de la mesure</b>. Après la barre, elle s’efface.</p>
+${ex("l7-mesure")}
+<h3>L’armure</h3>
+<p>Quand des dièses ou des bémols sont écrits juste après la clé, au début de chaque portée, ils forment l’<b>armure</b>. Ils s’appliquent à <b>toutes</b> les notes de ce nom, à toutes les hauteurs, pendant tout le chant.</p>
+${ex("l7-armure")}
+${ex("l7-armure-b")}
+<p>Les dièses s’ajoutent toujours dans le même ordre : fa, do, sol, ré, la, mi, si. Les bémols dans l’ordre inverse : si, mi, la, ré, sol, do, fa. Pour chanter, inutile de connaître la tonalité : regardez sur quelles lignes ou quels interlignes sont posés les signes de l’armure et retenez quelles notes sont modifiées.</p>
+<div class="w-sing" data-sx="fadiese"></div>
+${rub(["Regardez l’armure de vos chants : combien de dièses ou de bémols, et sur quelles notes ?","Entourez au crayon les altérations écrites au milieu du chant : ce sont souvent les passages délicats."])}`,
+quiz:[
+ {q:"Le dièse…",o:["monte la note d’un demi-ton","descend la note d’un demi-ton","annule une altération"],a:0,e:"Le bémol descend, le bécarre annule."},
+ {q:"Quel signe annule un dièse ou un bémol ?",o:["♭","♮","♯"],a:1,e:"Le bécarre."},
+ {q:"Une altération écrite au milieu d’une mesure vaut…",o:["pour une seule note","jusqu’à la fin de la mesure","jusqu’à la fin du chant"],a:1,e:"Pour les notes à la même place, jusqu’à la barre de mesure."},
+ {q:"Avec cette armure, comment se chante la note sur la 5e ligne ?",ex:{key:1,items:[{n:"F5",d:"w"}],noplay:1},o:["fa","fa♯","fa♭"],a:1,e:"Le dièse de l’armure est sur la ligne du fa : tous les fa sont dièse."},
+ {q:"Entre mi et fa, il y a…",o:["un ton","un demi-ton"],a:1,e:"Pas de touche noire entre mi et fa."}]},
+
+{id:8,titre:"Lire une partition à 4 voix",but:"Suivre sa ligne dans une partition de chorale sans se perdre.",html:`
+<p class="lead">Une partition de chorale réunit plusieurs voix. Le défi n’est pas de tout lire, mais de suivre sa ligne sans se perdre.</p>
+<h3>Le système</h3>
+<p>Les portées qui se chantent en même temps sont reliées à gauche par un trait et une accolade : c’est un <b>système</b>. On lit un système de gauche à droite, puis on passe au système suivant, plus bas sur la page, en retrouvant sa propre portée.</p>
+<h3>Deux présentations courantes</h3>
+${tbl(["Présentation","Où est ma voix ?"],[["4 portées","Une portée par voix, de haut en bas : soprano, alto, ténor, basse. Le nom est écrit au début."],["2 portées (recueils, chants d’assemblée)","Sopranos et altos partagent la portée en clé de sol ; ténors et basses la portée en clé de fa. Sur chaque portée, la voix du dessus a les hampes vers le haut, celle du dessous les hampes vers le bas."]])}
+<div class="w-satb"></div>
+<div class="w-sing" data-sx="alleluia"></div>
+<h3>Les paroles</h3>
+<p>Le texte est écrit sous la portée ou entre les deux portées. Les syllabes sont séparées par des tirets ; un trait prolongé après une syllabe indique qu’elle se tient sur plusieurs notes. Quand il y a plusieurs couplets, leurs textes sont empilés et numérotés 1., 2., 3. : suivez toujours la même ligne de texte pendant un couplet.</p>
+<h3>Indications à repérer</h3>
+${tbl(["Indication","Signification"],[["R. ou Refrain","repris par tous, souvent après chaque couplet"],["C. ou Couplet, Strophe","parfois confié à un soliste ou à un pupitre"],["unis. (unisson)","toutes les voix chantent la même mélodie"],["div. (divisi)","le pupitre se sépare sur deux notes"],["Tutti / Solo","tout le monde / une seule personne"]])}
+${rub(["Sur un chant à 4 voix, repérez où commence chaque système.","Trouvez votre voix au premier système et suivez-la du doigt jusqu’à la fin en écoutant un enregistrement. Notez les endroits où vous avez perdu le fil."])}`,
+quiz:[
+ {q:"Sur une portée en clé de sol partagée, les notes à hampe vers le bas sont celles des…",o:["sopranos","altos"],a:1,e:"La voix du dessous a les hampes vers le bas."},
+ {q:"Sur la portée en clé de fa partagée, les notes à hampe vers le haut sont celles des…",o:["ténors","basses"],a:0,e:"Les ténors sont au-dessus des basses."},
+ {q:"À la fin d’un système, on continue…",o:["sur la portée juste en dessous","au système suivant, sur sa propre portée"],a:1,e:"La portée juste en dessous est celle d’une autre voix."},
+ {q:"« unis. » signifie…",o:["toutes les voix chantent la même mélodie","chanter doucement"],a:0,e:"Unisson."},
+ {q:"Plusieurs lignes de texte numérotées sous les mêmes notes, ce sont…",o:["les couplets","les voix"],a:0,e:"On suit la ligne du couplet en cours."}]},
+
+{id:9,titre:"Nuances, tempo et reprises",but:"Comprendre les indications d’expression et le chemin à suivre dans la partition.",html:`
+<p class="lead">Autour des notes, la partition indique comment chanter et dans quel ordre lire.</p>
+<h3>Les nuances</h3>
+${tbl(["Signe","Nom","Effet"],[["pp","pianissimo","très doux"],["p","piano","doux"],["mp","mezzo piano","moyennement doux"],["mf","mezzo forte","moyennement fort"],["f","forte","fort"],["ff","fortissimo","très fort"],["&lt; ou cresc.","crescendo","de plus en plus fort"],["&gt; ou dim.","decrescendo, diminuendo","de plus en plus doux"]],0)}
+<h3>Le tempo</h3>
+<p>En haut à gauche, un mot ou un nombre indique la vitesse. « ♩ = 72 » signifie 72 noires par minute : réglez le métronome de la leçon 5 sur 72 pour l’entendre.</p>
+${tbl(["Indication","Sens"],[["Lento, Adagio","lent"],["Andante","allant, au pas"],["Moderato","modéré"],["Allegro","rapide, joyeux"],["rit., rall.","en ralentissant"],["a tempo","on revient au tempo de départ"]])}
+<p>Le <b>point d’orgue</b>, un arc avec un point au-dessus d’une note, demande de tenir cette note plus longtemps, jusqu’au geste du chef. On le trouve souvent à la fin des phrases des cantiques.</p>
+<h3>Les reprises</h3>
+${ex("l9-reprise")}
+${tbl(["Indication","Que faire"],[["Barres de reprise (deux points contre une double barre)","chanter deux fois le passage encadré"],["Cases 1. et 2.","au premier passage, chanter la case 1 ; au second, sauter directement à la case 2"],["D.C. (da capo)","revenir au début"],["D.S. (dal segno)","revenir au signe (un S barré entouré de deux points)"],["Fine","fin du chant après la reprise"],["Coda","sauter à la conclusion, marquée d’un cercle traversé d’une croix"]])}
+<p>À la messe, le chef ou l’animateur décide souvent du nombre de couplets : notez-le au crayon avant la célébration.</p>
+${rub(["Sur un chant que vous préparez, surlignez les nuances.","Tracez au crayon le chemin complet : refrain, couplet 1, refrain, couplet 2…"])}`,
+quiz:[
+ {q:"mf signifie…",o:["moyennement fort","très fort","moyennement doux"],a:0,e:"mezzo forte."},
+ {q:"Le signe « &lt; » sous des notes demande de…",o:["chanter de plus en plus fort","ralentir","accélérer"],a:0,e:"C’est un crescendo."},
+ {q:"« ♩ = 60 » signifie…",o:["60 noires par minute","60 mesures"],a:0,e:"Une noire par seconde."},
+ {q:"Un point d’orgue demande de…",o:["tenir la note jusqu’au geste du chef","respirer"],a:0,e:"La pulsation est suspendue sur cette note."},
+ {q:"« a tempo » signifie…",o:["revenir au tempo de départ","chanter sur le temps fort"],a:0,e:"Souvent après un rit."}]},
+
+{id:10,titre:"Déchiffrer seul un chant liturgique",but:"Préparer un chant seul, du premier regard à la répétition.",html:`
+<p class="lead">Vous avez tous les outils. Voici une méthode pour préparer un chant seul, du premier regard à la répétition.</p>
+<h3>La méthode en huit étapes</h3>
+<ol>
+<li><b>Repérer sa ligne</b> : votre portée, la clé, l’armure, le chiffrage, le tempo.</li>
+<li><b>Survoler le parcours</b> : refrain, couplets, reprises, fin.</li>
+<li><b>Lire le rythme seul</b> : parlez le texte en rythme en battant la mesure, sans chanter.</li>
+<li><b>Nommer les notes en rythme</b> : dites do, ré, mi… en respectant les durées.</li>
+<li><b>Trouver la première note</b> sur le clavier ci-dessous, ou demandez-la au chef.</li>
+<li><b>Chanter lentement</b> sur « la » ou sur le nom des notes, phrase par phrase.</li>
+<li><b>Ajouter le texte</b>, toujours lentement, puis accélérer jusqu’au tempo.</li>
+<li><b>Marquer au crayon</b> les passages difficiles et les respirations.</li>
+</ol>
+<div class="w-kb"></div>
+<h3>Les chants de la liturgie</h3>
+<p><b>Refrain et couplets.</b> Beaucoup de chants de messe alternent un refrain repris par toute l’assemblée et des couplets chantés par la chorale ou un soliste. Apprenez toujours le refrain en premier.</p>
+<p><b>La psalmodie.</b> Pour les psaumes, une grande partie du texte se chante sur une même note répétée, la note de récitation ; la mélodie ne bouge qu’à la fin de chaque phrase. Les recueils signalent les syllabes où l’on change de note (en gras, soulignées ou marquées d’un signe) : lisez la légende du livret.</p>
+<p><b>La cote.</b> Les chants liturgiques en français portent souvent une cote, faite de lettres et de chiffres, attribuée par le SECLI (Secrétariat des éditeurs de chants pour la liturgie). Elle permet de retrouver un chant et ses différentes versions.</p>
+<div class="w-sing" data-sx="psaume"></div>
+<h3>Bonus : la notation grégorienne</h3>
+<p>Le chant grégorien (Kyrie, Salve Regina, Ave Maria…) s’écrit souvent dans une notation plus ancienne : portée de <b>4 lignes</b>, notes carrées appelées <b>neumes</b>, clé de do ou de fa posée sur une ligne pour donner le repère, et pas de chiffrage : le rythme suit le texte. À la fin de chaque ligne, un petit signe, le <b>guidon</b>, annonce la première note de la ligne suivante. Le principe reste le même : un repère, puis on compte les crans.</p>
+<figure class="fig"><div class="scroll">${gregSVG()}</div><p class="swipe">Faites glisser pour voir la suite →</p><figcaption>Schéma d’une ligne grégorienne (mélodie inventée pour l’exemple). Ici, la clé de do est sur la ligne du haut : cette ligne est do.</figcaption></figure>
+<h3>Et maintenant ?</h3>
+<p>Gardez dix minutes par jour : trois minutes d’entraînement aux notes, trois minutes de rythme, puis un chant de la chorale avec la méthode. En quelques semaines, la lecture devient naturelle.</p>
+${rub(["Choisissez un chant que la chorale n’a pas encore travaillé et appliquez les huit étapes.","Arrivez à la répétition en connaissant votre première note et le rythme de votre ligne."])}`,
+quiz:[
+ {q:"Par quoi commencer face à un nouveau chant ?",o:["Chanter tout de suite avec le texte","Repérer sa ligne, la clé, l’armure et la mesure"],a:1,e:"Le repérage évite la plupart des erreurs."},
+ {q:"Avant de chanter les notes, on travaille…",o:["le rythme, en parlant le texte","les nuances"],a:0,e:"Un rythme juste est la base."},
+ {q:"Dans la psalmodie, une grande partie du texte se chante…",o:["sur une seule note","sur une mélodie différente à chaque mot"],a:0,e:"La note de récitation."},
+ {q:"La portée grégorienne a…",o:["4 lignes","5 lignes","6 lignes"],a:0,e:"Quatre lignes et des notes carrées."},
+ {q:"Le guidon, à la fin d’une ligne grégorienne,…",o:["annonce la première note de la ligne suivante","indique de respirer"],a:0,e:"Il aide à enchaîner les lignes."}]}
+];
+
+const LEXIQUE=[
+["Accolade","Signe qui relie à gauche les portées d’un même système."],
+["Altération","Dièse, bémol ou bécarre : modifie une note d’un demi-ton."],
+["Anacrouse (levée)","Note ou notes placées avant le premier temps fort."],
+["Armure","Dièses ou bémols placés après la clé, valables pour tout le chant."],
+["A tempo","Revenir au tempo de départ."],
+["Bécarre ♮","Annule un dièse ou un bémol."],
+["Bémol ♭","Descend une note d’un demi-ton."],
+["Chiffrage","Les deux chiffres du début : nombre de temps par mesure et figure qui vaut un temps."],
+["Clé","Signe en début de portée qui donne le nom d’une ligne."],
+["Conjoint, disjoint","Mouvement vers la note voisine, ou saut d’une ou plusieurs notes."],
+["Crescendo, decrescendo","De plus en plus fort, de plus en plus doux."],
+["Da capo (D.C.)","Reprendre au début."],
+["Dal segno (D.S.)","Reprendre au signe."],
+["Demi-ton","Plus petit écart entre deux notes, comme entre mi et fa."],
+["Diapason","Instrument qui donne le la de référence (440 Hz)."],
+["Dièse ♯","Monte une note d’un demi-ton."],
+["Divisi (div.)","Le pupitre se partage sur deux notes."],
+["Hampe","Trait vertical attaché à la tête de la note."],
+["Interligne","Espace entre deux lignes de la portée."],
+["Liaison","Arc reliant deux notes : même hauteur, on tient ; hauteurs différentes, on enchaîne sur une syllabe."],
+["Mélisme","Plusieurs notes chantées sur une seule syllabe."],
+["Mesure","Groupe de temps délimité par deux barres verticales."],
+["Neume","Note ou groupe de notes de la notation grégorienne."],
+["Nuance","Indication de volume : p, mf, f…"],
+["Octave","Écart entre une note et la suivante du même nom."],
+["Point d’orgue","Arc pointé au-dessus d’une note : on la tient jusqu’au geste du chef."],
+["Portée","Les cinq lignes sur lesquelles on écrit la musique."],
+["Psalmodie","Chant d’un psaume sur une note de récitation, avec une formule mélodique en fin de phrase."],
+["Pulsation","Battement régulier qui sert à compter les temps."],
+["Pupitre","Groupe de choristes qui chantent la même voix."],
+["Reprise","Passage à chanter une seconde fois."],
+["Rit., rall.","En ralentissant."],
+["SATB","Soprano, alto, ténor, basse : les quatre voix de la chorale."],
+["Système","Ensemble des portées chantées en même temps, reliées par l’accolade."],
+["Tempo","Vitesse du chant."],
+["Tessiture","Étendue des notes confortables pour une voix."],
+["Unisson","Toutes les voix chantent la même mélodie."]
+];
+
+/* ---------- Vues ---------- */
+const $view=document.getElementById("view");
+function lessonState(id){return S.done[id]?"done":(S.last===id?"cur":"todo");}
+function nextLesson(){for(const L of LESSONS){if(!S.done[L.id]) return L;} return null;}
+
+function viewHome(){
+  const n=Object.keys(S.done).filter(k=>S.done[k]).length, nl=nextLesson();
+  const resume=S.last&&!S.done[S.last]?LESSONS[S.last-1]:nl;
+  const label=n===0&&!S.last?"Commencer la leçon 1":(resume?`Reprendre : leçon ${resume.id}`:"Revoir le parcours");
+  const voiceBtns=Object.keys(VOICES).map(v=>`<button class="btn sm" data-voice="${v}" aria-pressed="${S.voice===v}">${VNAME[VOICES[v]]}</button>`).join("");
+  return `<section class="hero"><p class="eyebrow">Parcours pour choristes débutants</p><h1>Solfège du choriste</h1>
+<p class="lead">Dix leçons courtes pour apprendre à lire seul votre partie dans les chants de la chorale : notes, rythme, clés, partitions à quatre voix et chants liturgiques.</p>
+<div class="row resume"><a class="btn primary" href="#lecon-${resume?resume.id:1}">${label}</a><a class="btn" href="#chant">Chanter</a><a class="btn" href="#entrainement">S’entraîner</a></div></section>
+<section class="panel"><h2>Quelle est votre voix ?</h2><p class="muted small">Les exemples et l’entraînement s’adaptent à votre pupitre. Vous pourrez changer plus tard.</p><div class="chips">${voiceBtns}</div></section>
+<h2>Le parcours <span class="muted small">· ${n} leçon${n>1?"s":""} terminée${n>1?"s":""} sur 10</span></h2>
+<ol class="lessons">${LESSONS.map(L=>{const st=lessonState(L.id); const qs=S.quiz[L.id];
+  return `<li><a href="#lecon-${L.id}"><span class="ln-num">${L.id}</span><span class="lt">${L.titre}</span><span class="st ${st}">${st==="done"?"Terminée":st==="cur"?"En cours":"À faire"}</span><span class="lg">${L.but}${qs?` · quiz ${qs.best}/${qs.total}`:""}</span></a></li>`;}).join("")}</ol>
+<section class="panel"><h2>Comment avancer</h2><ul class="tips">
+<li>Une leçon par séance, 15 à 20 minutes suffisent.</li>
+<li>Gardez une partition de la chorale à côté de vous : chaque leçon se termine par un exercice dessus, en rouge.</li>
+<li>Passez à la leçon suivante quand le quiz est réussi sans hésiter.</li>
+<li>Touchez n’importe quelle note d’un exemple pour l’entendre.</li>
+<li>Entre deux leçons, quelques minutes d’entraînement chaque jour font la différence.</li>
+<li>Pas de son sur iPhone ? Désactivez le mode silencieux (le bouton sur le côté du téléphone) et montez le volume.</li></ul></section>`;
+}
+
+function quizHTML(L){
+  const qs=S.quiz[L.id];
+  return `<section class="quiz" data-quiz="${L.id}"><h2>Vérifiez vos acquis</h2>${qs?`<p class="small muted">Meilleur score : ${qs.best} / ${qs.total}</p>`:""}
+<ol class="qlist">${L.quiz.map((qq,qi)=>`<li class="q" data-q="${qi}"><p class="qq">${qq.q}</p>${qq.ex?`<div class="exq" data-l="${L.id}" data-qi="${qi}"></div>`:""}<div class="opts">${qq.o.map((o,oi)=>`<button class="opt" data-oi="${oi}">${o}</button>`).join("")}</div><p class="fb" hidden></p></li>`).join("")}</ol>
+<div class="qres" hidden></div></section>`;
+}
+
+function viewLesson(id){
+  const L=LESSONS[id-1]; if(!L) return viewHome();
+  if(!S.done[id]){S.last=id; save();}
+  const prev=LESSONS[id-2], next=LESSONS[id];
+  return `<article class="lesson"><p class="eyebrow">Leçon ${id} sur 10</p><h1>${L.titre}</h1><p class="goal"><b>Objectif :</b> ${L.but}</p>
+${L.html}
+${quizHTML(L)}
+<section class="notes"><h3>Mes notes</h3><label class="small muted" for="note-${id}">Vos remarques sur cette leçon, enregistrées avec votre progression.</label><textarea id="note-${id}" data-note="${id}" placeholder="Ex. : je confonds encore la et do dans les interlignes.">${esc(S.notes[id]||"")}</textarea></section>
+<div class="done-row"><button class="btn ${S.done[id]?"isdone":"primary"}" data-done="${id}">${S.done[id]?"Leçon terminée ✓ (annuler)":"Marquer la leçon comme terminée"}</button></div>
+<nav class="pn">${prev?`<a href="#lecon-${prev.id}"><small>Précédente</small>${prev.id}. ${prev.titre}</a>`:`<a href="#accueil"><small>Retour</small>Parcours</a>`}${next?`<a href="#lecon-${next.id}" style="text-align:right"><small>Suivante</small>${next.id}. ${next.titre}</a>`:`<a href="#entrainement" style="text-align:right"><small>Ensuite</small>Entraînement</a>`}</nav></article>`;
+}
+
+function viewTrain(){
+  const t=S.train;
+  return `<p class="eyebrow">Quelques minutes par jour</p><h1>Entraînement</h1>
+<section class="widget trainer" id="trN"><h3>Lire les notes</h3>
+<div class="row"><div class="seg" role="group" aria-label="Clé"><button data-clef="sol">Clé de sol</button><button data-clef="fa">Clé de fa</button></div></div>
+<div class="card"></div><div class="answers">${FR.map((f,i)=>`<button class="opt" data-ans="${i}">${f}</button>`).join("")}</div>
+<p class="msg" aria-live="polite"></p><div class="stats"></div></section>
+<section class="widget trainer" id="trR"><h3>Durées</h3><p class="small muted">Combien de temps dure cette figure (une noire = 1 temps) ?</p>
+<div class="card"></div><div class="answers">${["4","3","2","1 ½","1","½","¼"].map(v=>`<button class="opt" data-ry="${v}">${v}</button>`).join("")}</div>
+<p class="msg" aria-live="polite"></p><div class="stats"></div></section>
+<section class="widget"><h3>Clavier : trouver sa note</h3><p class="small muted">Touchez une touche pour entendre la note, par exemple la première note de votre voix.</p><div class="w-kb" data-inline="1"></div></section>
+<div class="w-metro"></div>`;
+}
+
+function viewLex(){return `<p class="eyebrow">Mots de la chorale</p><h1>Lexique</h1><dl class="lex">${LEXIQUE.map(([a,b])=>`<div><dt>${a}</dt><dd>${b}</dd></div>`).join("")}</dl>`;}
+
+function viewSave(){
+  const n=Object.keys(S.done).filter(k=>S.done[k]).length;
+  const voiceBtns=Object.keys(VOICES).map(v=>`<button class="btn sm" data-voice="${v}" aria-pressed="${S.voice===v}">${VNAME[VOICES[v]]}</button>`).join("");
+  return `<p class="eyebrow">Sauvegarde</p><h1>Ma progression</h1>
+<p>${n} leçon${n>1?"s":""} terminée${n>1?"s":""} sur 10. Meilleures séries : clé de sol <b>${S.train.sol.best}</b>, clé de fa <b>${S.train.fa.best}</b>, durées <b>${S.train.ry.best}</b>. Exercices chantés : <b>${Object.keys(S.chant.ex).length}</b> sur ${Object.keys(SX).length}.</p>
+<section class="panel"><h2>Ma voix</h2><div class="chips">${voiceBtns}</div></section>
+<section class="panel"><h2>Où est enregistrée ma progression ?</h2>
+<p>Dans la mémoire de <b>ce navigateur, sur cet appareil</b> (localStorage). Elle reste là quand vous fermez la page. En revanche, votre téléphone et votre ordinateur ont chacun leur propre mémoire, et vider les données du navigateur l’efface.</p>
+<p>Pour passer d’un appareil à l’autre ou garder une copie de secours, copiez votre code de sauvegarde et collez-le dans l’autre appareil.</p></section>
+<section class="panel"><h2>Exporter</h2><label class="small muted" for="expCode">Votre code de sauvegarde</label><textarea class="code" id="expCode" readonly></textarea>
+<div class="row" style="margin-top:8px"><button class="btn sm" id="btnCopy">Copier le code</button><span class="small muted" id="copyMsg" aria-live="polite"></span></div></section>
+<section class="panel"><h2>Importer</h2><label class="small muted" for="impCode">Collez ici un code venant d’un autre appareil. Il remplace la progression actuelle.</label><textarea class="code" id="impCode"></textarea>
+<div class="row" style="margin-top:8px"><button class="btn sm" id="btnImp">Importer</button><span class="small" id="impMsg" aria-live="polite"></span></div></section>
+<section class="panel"><h2>Tout effacer</h2><p class="small muted">Remet le parcours à zéro sur cet appareil.</p><button class="btn sm" id="btnReset">Effacer ma progression</button><div id="resetBox"></div></section>`;
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ---------- Hydratation ---------- */
+function hydrate(root){
+  root.querySelectorAll(".ex").forEach(el=>{const d=EX[el.dataset.ex]; if(d) el.outerHTML=figHTML(d[0],d[1]);});
+  root.querySelectorAll(".exq").forEach(el=>{const L=LESSONS[el.dataset.l-1], sp=L.quiz[el.dataset.qi].ex; const r=staffSVG(sp); el.innerHTML=`<div class="fig" style="max-width:260px;padding:6px 10px">${r.svg}</div>`;});
+  root.querySelectorAll(".w-metro").forEach(metroWidget);
+  root.querySelectorAll(".w-kb").forEach(kbWidget);
+  root.querySelectorAll(".w-satb").forEach(satbWidget);
+  root.querySelectorAll(".quiz").forEach(quizLogic);
+  const tn=root.querySelector("#trN"); if(tn) trainerNotes(tn);
+  const tr=root.querySelector("#trR"); if(tr) trainerRhythm(tr);
+  if(root.querySelector("#expCode")) saveLogic(root);
+  root.querySelectorAll(".w-sing").forEach(el=>{if(!el.closest("details")) singWidget(el,el.dataset.sx);});
+  root.querySelectorAll(".w-free").forEach(freeWidget);
+  root.querySelectorAll("details.sx").forEach(d=>d.addEventListener("toggle",()=>{const el=d.querySelector(".w-sing"); if(d.open&&el) singWidget(el,el.dataset.sx);}));
+  markOverflow(root);
+}
+
+function satbWidget(el){
+  const fid="f"+(++figSeq), r=satbSVG(SATB);
+  FIGS[fid]={lists:["s","a","t","b"].map(v=>({v,ev:r.lists[v],vol:.13})),tempo:76};
+  const mv=VOICES[S.voice];
+  el.outerHTML=`<figure class="fig" id="${fid}"><div class="scroll">${r.svg}</div><p class="swipe">Faites glisser la portée pour voir la suite → (elle défile aussi toute seule pendant l’écoute)</p><figcaption>« Alléluia, Amen » à quatre voix (exemple composé pour ce tutoriel). En haut, sopranos (hampes vers le haut) et altos (hampes vers le bas) ; en bas, ténors (hampes vers le haut) et basses (hampes vers le bas). Touchez une note pour l’entendre.</figcaption>
+<div class="row"><button class="btn sm play" data-play="${fid}">${ICON_PLAY}Toutes les voix</button>${["s","a","t","b"].map(v=>`<button class="btn sm" data-solo="${fid}" data-v="${v}">${VNAME[v]}</button>`).join("")}${mv?`<button class="btn sm play" data-mine="${fid}" data-v="${mv}">${ICON_PLAY}Ma voix en avant</button>`:""}<button class="btn sm" data-stop>${ICON_STOP}Arrêter</button></div></figure>`;
+}
+
+function kbWidget(el){
+  // Une octave (+ le do du dessus) sur téléphone pour des touches assez larges, deux octaves sur grand écran
+  const nO=el.getBoundingClientRect().width>=560?2:1, low=S.voice==="basse"||S.voice==="tenor";
+  let oct=(low?3:4)-(nO===2?1:0);
+  const WH=[0,2,4,5,7,9,11], BL=[[1,0],[3,1],[6,3],[8,4],[10,5]];
+  function draw(){
+    const whites=nO*7+1, wpc=100/whites;
+    let html=`<div class="row" style="margin-bottom:10px"><button class="btn sm" data-o="-1">‹ Plus grave</button><button class="btn sm" data-o="1">Plus aigu ›</button></div><div class="kb-wrap"><div class="kb">`;
+    for(let o=0;o<nO;o++) WH.forEach((s,i)=>{const m=12*(oct+1+o)+s; html+=`<button class="kw" data-key="${m}" aria-label="${FR[i]}">${FR[i]}${m===60?"<small>do central</small>":""}</button>`;});
+    {const m=12*(oct+1+nO); html+=`<button class="kw" data-key="${m}" aria-label="do">do${m===60?"<small>do central</small>":""}</button>`;}
+    for(let o=0;o<nO;o++) BL.forEach(([s,i])=>{const m=12*(oct+1+o)+s, left=(o*7+i+1)*wpc-wpc*.32; html+=`<button class="kbk" data-key="${m}" style="left:${left}%;width:${wpc*.64}%" aria-label="touche noire"></button>`;});
+    html+=`</div></div>`; el.innerHTML=html;
+  }
+  draw();
+  el.addEventListener("click",ev=>{const o=ev.target.closest("[data-o]"); if(o){oct=Math.max(1,Math.min(6-nO,oct+(+o.dataset.o))); draw(); return;}
+    const k=ev.target.closest("[data-key]"); if(k){const c=ac(); if(!c) return; tone(+k.dataset.key,c.currentTime+.02,.9,.25); k.classList.add("on"); setTimeout(()=>k.classList.remove("on"),400);}});
+}
+
+function metroWidget(el){
+  let bpm=72, beats=4, timer=null, next=0, beat=0;
+  el.outerHTML=`<section class="widget metro" id="metro"><h3>Métronome</h3>
+<div class="row"><span class="tempo"><span id="mBpm">72</span></span><span class="muted small">battements par minute</span></div>
+<input type="range" id="mRange" min="40" max="160" value="72" aria-label="Tempo">
+<div class="row" style="margin-top:8px"><div class="seg" role="group" aria-label="Temps par mesure"><button data-b="2">2 temps</button><button data-b="3">3 temps</button><button data-b="4" aria-pressed="true">4 temps</button></div>
+<button class="btn sm play" id="mGo">${ICON_PLAY}Démarrer</button></div><div class="dots" id="mDots"></div></section>`;
+  const box=document.getElementById("metro"), dots=box.querySelector("#mDots"), go=box.querySelector("#mGo");
+  function drawDots(){dots.innerHTML=Array.from({length:beats},(_,i)=>`<i class="${i===0?"first":""}"></i>`).join("");}
+  drawDots();
+  function sched(){const c=ac(); while(next<c.currentTime+.12){const b=beat; click(next,b===0); const delay=(next-c.currentTime)*1000;
+      PLAY.timers.push(setTimeout(()=>{dots.querySelectorAll("i").forEach((d,i)=>d.classList.toggle("on",i===b));},Math.max(0,delay)));
+      next+=60/bpm; beat=(beat+1)%beats;}}
+  function stop(){clearInterval(timer); timer=null; go.innerHTML=ICON_PLAY+"Démarrer"; dots.querySelectorAll("i").forEach(d=>d.classList.remove("on"));}
+  go.addEventListener("click",()=>{if(timer){stop();return;} const c=ac(); if(!c) return; next=c.currentTime+.08; beat=0; timer=setInterval(sched,25); go.innerHTML=ICON_STOP+"Arrêter";});
+  box.querySelector("#mRange").addEventListener("input",ev=>{bpm=+ev.target.value; box.querySelector("#mBpm").textContent=bpm;});
+  box.querySelectorAll("[data-b]").forEach(b=>b.addEventListener("click",()=>{beats=+b.dataset.b; beat=0; box.querySelectorAll("[data-b]").forEach(x=>x.setAttribute("aria-pressed",x===b)); drawDots();}));
+  window.addEventListener("hashchange",stop,{once:true});
+}
+
+function quizLogic(sec){
+  const L=LESSONS[sec.dataset.quiz-1]; const ans={};
+  sec.addEventListener("click",ev=>{
+    const b=ev.target.closest(".opt"); if(b){const li=b.closest(".q"), qi=+li.dataset.q; if(qi in ans) return;
+      const qq=L.quiz[qi], oi=+b.dataset.oi, ok=oi===qq.a; ans[qi]=ok;
+      li.querySelectorAll(".opt").forEach((x,i)=>{x.disabled=true; if(i===qq.a) x.classList.add("good"); else if(i===oi) x.classList.add("bad");});
+      const fb=li.querySelector(".fb"); fb.hidden=false; fb.className="fb "+(ok?"good":"bad"); fb.innerHTML=`<b>${ok?"Juste.":"Pas tout à fait."}</b> ${qq.e||""}`;
+      if(qq.ex&&qq.ex.items[0].n){const r=staffSVG(qq.ex); const ev0=r.ev.find(e=>e.m!=null); const c=ac(); if(c&&ev0) tone(ev0.m,c.currentTime+.02,.8,.2);}
+      if(Object.keys(ans).length===L.quiz.length){const sc=Object.values(ans).filter(Boolean).length, tot=L.quiz.length, prev=S.quiz[L.id];
+        S.quiz[L.id]={best:Math.max(sc,prev?prev.best:0),total:tot}; save();
+        const r=sec.querySelector(".qres"); r.hidden=false;
+        r.innerHTML=`<p><strong>${sc} / ${tot}</strong></p><p>${sc===tot?"Parfait. Vous pouvez marquer la leçon comme terminée.":sc>=tot-1?"Très bien. Relisez le point manqué, puis passez à la suite.":"Relisez la leçon et refaites le quiz demain : la répétition fait le travail."}</p><button class="btn sm" data-retry>Recommencer le quiz</button>`;}
+      return;}
+    if(ev.target.closest("[data-retry]")){const fresh=document.createElement("div"); fresh.innerHTML=quizHTML(L); const n=fresh.firstElementChild; sec.replaceWith(n); hydrate(n); quizLogic(n); n.scrollIntoView({block:"start"});}
+  });
+}
+
+function trainerNotes(box){
+  let clef=S.voice==="basse"?"fa":"sol", cur=null, streak=0, waiting=false;
+  const card=box.querySelector(".card"), msg=box.querySelector(".msg"), stats=box.querySelector(".stats");
+  function seg(){box.querySelectorAll("[data-clef]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.clef===clef));}
+  function showStats(){const t=S.train[clef]; stats.innerHTML=`<span>Série en cours : <b>${streak}</b></span><span>Meilleure série : <b>${t.best}</b></span><span>Réussite : <b>${t.n?Math.round(t.ok*100/t.n):0} %</b> sur ${t.n}</span>`;}
+  function next(){const r=clef==="fa"?[16,28]:[28,40]; let d; do{d=r[0]+Math.floor(Math.random()*(r[1]-r[0]+1));}while(cur&&d===cur.d);
+    const li=((d%7)+7)%7, oct=Math.floor(d/7); cur={d,li,p:LETTERS[li]+oct};
+    card.innerHTML=staffSVG({clef,items:[{n:cur.p,d:"w"}],noplay:1}).svg; msg.textContent=""; msg.className="msg"; waiting=false;
+    box.querySelectorAll("[data-ans]").forEach(b=>{b.classList.remove("good","bad"); b.disabled=false;}); showStats();}
+  box.addEventListener("click",ev=>{
+    const cb=ev.target.closest("[data-clef]"); if(cb){clef=cb.dataset.clef; streak=0; cur=null; seg(); next(); return;}
+    const nb=ev.target.closest("[data-nextn]"); if(nb){next(); return;}
+    const b=ev.target.closest("[data-ans]"); if(!b||waiting) return; waiting=true;
+    const ok=+b.dataset.ans===cur.li, t=S.train[clef]; t.n++;
+    const c=ac(); if(c) tone(parseP(cur.p).base,c.currentTime+.02,.8,.22);
+    box.querySelectorAll("[data-ans]").forEach(x=>{x.disabled=true; if(+x.dataset.ans===cur.li) x.classList.add("good");});
+    if(ok){t.ok++; streak++; t.best=Math.max(t.best,streak); msg.className="msg good"; msg.textContent=streak>=5?`Juste. ${streak} d’affilée !`:"Juste."; save(); setTimeout(next,750);}
+    else{b.classList.add("bad"); streak=0; msg.className="msg bad"; msg.innerHTML=`C’était <b>${FR[cur.li]}</b>. <button class="btn sm" data-nextn>Suivante</button>`; save();}
+    showStats();
+  });
+  seg(); next();
+}
+
+function trainerRhythm(box){
+  const POOL=[{x:{n:"G4",d:"w"},v:"4",nm:"Ronde"},{x:{n:"G4",d:"h",dot:1},v:"3",nm:"Blanche pointée"},{x:{n:"G4",d:"h"},v:"2",nm:"Blanche"},{x:{n:"G4",d:"q",dot:1},v:"1 ½",nm:"Noire pointée"},{x:{n:"G4",d:"q"},v:"1",nm:"Noire"},{x:{n:"G4",d:"e"},v:"½",nm:"Croche"},{x:{n:"G4",d:"s"},v:"¼",nm:"Double croche"},
+    {x:{r:"w"},v:"4",nm:"Pause"},{x:{r:"h"},v:"2",nm:"Demi-pause"},{x:{r:"q"},v:"1",nm:"Soupir"},{x:{r:"e"},v:"½",nm:"Demi-soupir"},{x:{r:"s"},v:"¼",nm:"Quart de soupir"}];
+  let cur=null, streak=0, waiting=false; const card=box.querySelector(".card"), msg=box.querySelector(".msg"), stats=box.querySelector(".stats");
+  function showStats(){const t=S.train.ry; stats.innerHTML=`<span>Série en cours : <b>${streak}</b></span><span>Meilleure série : <b>${t.best}</b></span><span>Réussite : <b>${t.n?Math.round(t.ok*100/t.n):0} %</b> sur ${t.n}</span>`;}
+  function next(){let c; do{c=POOL[Math.floor(Math.random()*POOL.length)];}while(c===cur); cur=c;
+    card.innerHTML=staffSVG({items:[Object.assign({},c.x)],noplay:1,minW:120}).svg; msg.textContent=""; msg.className="msg"; waiting=false;
+    box.querySelectorAll("[data-ry]").forEach(b=>{b.classList.remove("good","bad"); b.disabled=false;}); showStats();}
+  box.addEventListener("click",ev=>{
+    if(ev.target.closest("[data-nextr]")){next();return;}
+    const b=ev.target.closest("[data-ry]"); if(!b||waiting) return; waiting=true;
+    const ok=b.dataset.ry===cur.v, t=S.train.ry; t.n++;
+    box.querySelectorAll("[data-ry]").forEach(x=>{x.disabled=true; if(x.dataset.ry===cur.v) x.classList.add("good");});
+    if(ok){t.ok++; streak++; t.best=Math.max(t.best,streak); msg.className="msg good"; msg.textContent=`Juste : ${cur.nm.toLowerCase()}, ${cur.v} temps.`; save(); setTimeout(next,900);}
+    else{b.classList.add("bad"); streak=0; msg.className="msg bad"; msg.innerHTML=`${cur.nm} : <b>${cur.v} temps</b>. <button class="btn sm" data-nextr>Suivante</button>`; save();}
+    showStats();
+  });
+  next();
+}
+
+function saveLogic(root){
+  const code="SOLF1."+btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  const exp=root.querySelector("#expCode"); exp.value=code;
+  root.querySelector("#btnCopy").addEventListener("click",()=>{const m=root.querySelector("#copyMsg");
+    const fallback=()=>{exp.focus(); exp.select(); m.textContent="Code sélectionné : copiez-le avec votre appareil.";};
+    try{navigator.clipboard.writeText(exp.value).then(()=>{m.textContent="Code copié.";},fallback);}catch(e){fallback();}});
+  root.querySelector("#btnImp").addEventListener("click",()=>{const m=root.querySelector("#impMsg"); let raw=root.querySelector("#impCode").value.trim();
+    try{if(raw.startsWith("SOLF1.")) raw=raw.slice(6); const o=JSON.parse(decodeURIComponent(escape(atob(raw)))); if(!o||typeof o.done!=="object") throw 0;
+      S=merge(o); save(); m.style.color="var(--ok)"; m.textContent="Progression importée."; setTimeout(route,700);}
+    catch(e){m.style.color="var(--warn)"; m.textContent="Ce code n’est pas reconnu. Vérifiez qu’il a été copié en entier.";}});
+  root.querySelector("#btnReset").addEventListener("click",()=>{const box=root.querySelector("#resetBox");
+    box.innerHTML=`<div class="confirm"><p>Effacer toutes les leçons terminées, les scores et vos notes sur cet appareil ?</p><div class="row"><button class="btn sm" id="rsYes">Oui, tout effacer</button><button class="btn sm" id="rsNo">Annuler</button></div></div>`;
+    box.querySelector("#rsNo").onclick=()=>box.innerHTML="";
+    box.querySelector("#rsYes").onclick=()=>{S=def(); save(); route();};});
+}
+
+/* ---------- Chanter : micro et justesse ---------- */
+const NAMES12=["do","do♯","ré","ré♯","mi","fa","fa♯","sol","sol♯","la","la♯","si"], P12=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const midiName=m=>NAMES12[((Math.round(m)%12)+12)%12];
+const midiP=m=>{m=Math.round(m); return P12[((m%12)+12)%12]+(Math.floor(m/12)-1);};
+function voiceClef(){return S.voice==="basse"?"fa":S.voice==="tenor"?"sol8":"sol";}
+function down8(items){return items.map(it=>it.n?Object.assign({},it,{n:it.n.replace(/(-?\d)$/,d=>String(+d-1))}):it);}
+const nl=arr=>arr.map(n=>q(n,{l:noteName(n)}));
+function echoRange(){const r=S.chant.range; if(r.lo!=null&&r.hi!=null&&r.hi-r.lo>=7) return [r.lo+2,r.hi-2];
+  return ({soprano:[62,74],alto:[57,69],tenor:[50,62],basse:[45,57]})[S.voice]||[57,69];}
+
+const SX={
+ echo:{titre:"Répéter une note",lecon:1,type:"echo",desc:"La page joue une note : chantez-la sur « la ». Une fois juste, vous découvrez son nom et sa place sur la portée."},
+ gamme:{titre:"La gamme de do",lecon:2,desc:"Chantez la gamme en disant le nom de chaque note. Tenez chaque note jusqu’à ce que la barre verte soit pleine.",spec:()=>({items:[...nl(["C4","D4","E4","F4"]),BAR,...nl(["G4","A4","B4","C5"]),END]})},
+ reperes:{titre:"Les trois repères",lecon:2,desc:"Do central, sol de la clé, do du 3e interligne : chantez les repères pour associer chacun à un son.",spec:()=>({items:[...nl(["C4","G4","C5"]),BAR,...nl(["G4"]),h("C4",{l:"do"}),END]})},
+ sauts:{titre:"Pas et sauts",lecon:2,desc:"D’abord des sauts (do, mi, sol), puis des pas (do, ré, mi, fa, sol). Sentez la différence dans la voix.",spec:()=>({items:[...nl(["C4","E4","G4","E4"]),BAR,...nl(["C4","D4","E4","F4"]),BAR,w("G4",{l:"sol"}),END]})},
+ clair:{titre:"Au clair de la lune",lecon:2,desc:"Votre premier air lu puis chanté. Chantez d’abord le nom des notes, puis les paroles.",spec:()=>({time:[4,4],items:EX["l2-clair"][0].items})},
+ tenue:{titre:"Tenir les durées",lecon:3,type:"hold",tempo:60,desc:"Tenez chaque note toute sa durée, à une seconde par temps : 4 secondes pour la ronde, 2 pour la blanche.",spec:()=>({time:[4,4],items:[w("E4",{l:"4 temps"}),BAR,h("G4",{l:"2 temps"}),h("E4",{l:"2 temps"}),BAR,w("C4",{l:"4 temps"}),END]})},
+ fadiese:{titre:"Le fa dièse",lecon:7,desc:"Avec un dièse à l’armure, chaque fa devient fa♯, un demi-ton plus haut. Écoutez le modèle, puis chantez.",spec:()=>({key:1,time:[4,4],items:[q("D4",{l:"ré"}),q("E4",{l:"mi"}),q("F4",{l:"fa♯"}),q("G4",{l:"sol"}),BAR,q("A4",{l:"la"}),q("G4",{l:"sol"}),q("F4",{l:"fa♯"}),q("E4",{l:"mi"}),BAR,w("D4",{l:"ré"}),END]})},
+ alleluia:{titre:"Ma ligne de l’Alléluia",lecon:8,own:1,desc:"Chantez votre voix de l’« Alléluia, Amen » de la leçon 8, note par note. Changez de voix dans « Votre voix » pour chanter une autre ligne.",spec:()=>{const v=VOICES[S.voice]||"s", items=[];
+   SATB.cols.forEach(c=>{if(c.bar){items.push(c.bar==="end"?END:BAR);return;} items.push({n:c[v],d:c.d,l:c.l});});
+   return {clef:(v==="s"||v==="a")?"sol":"fa",key:1,time:[4,4],items};}},
+ psaume:{titre:"Psalmodier",lecon:10,desc:"Récitez le texte sur une seule note, puis faites la petite cadence de fin de phrase.",spec:()=>({items:[q("A4",{l:"Le"}),q("A4",{l:"Sei-"}),q("A4",{l:"gneur"}),q("A4",{l:"est"}),q("A4",{l:"mon"}),q("C5",{l:"ber-"}),h("A4",{l:"ger"}),END]})}
+};
+function sxSpec(id){const D=SX[id]; let sp=D.spec(); sp=Object.assign({},sp,{items:sp.items.map(it=>it.n?Object.assign({},it,{hi:0}):it)});
+  if(!D.own){const c=voiceClef(); sp.clef=c; if(c==="fa") sp.items=down8(sp.items);} return sp;}
+
+/* Détection de hauteur (algorithme YIN) */
+function yin(buf,sr){
+  const N=buf.length, half=N>>1; let rms=0; for(let i=0;i<N;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/N); if(rms<.01) return null;
+  const tMin=Math.floor(sr/1100), tMax=Math.min(half-2,Math.floor(sr/65)), d=new Float32Array(tMax+2);
+  for(let t=1;t<=tMax+1;t++){let s=0; for(let i=0;i<half;i++){const x=buf[i]-buf[i+t]; s+=x*x;} d[t]=s;}
+  d[0]=1; let run=0; for(let t=1;t<=tMax+1;t++){run+=d[t]; d[t]=run?d[t]*t/run:1;}
+  let tau=-1; for(let t=tMin;t<=tMax;t++){if(d[t]<.15){while(t+1<=tMax&&d[t+1]<d[t]) t++; tau=t; break;}}
+  if(tau<2) return null;
+  const x0=d[tau-1], x1=d[tau], x2=d[tau+1], den=x0+x2-2*x1, sh=den?(x0-x2)/(2*den):0;
+  return sr/(tau+sh);
+}
+const MIC={stream:null,an:null,src:null,buf:null,timer:null,subs:new Set(),hist:[],failed:null,idle:null};
+async function micStart(){
+  const c=ac(); if(!c) throw new Error("audio");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error("unsupported");
+  const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  const src=c.createMediaStreamSource(st), an=c.createAnalyser(); an.fftSize=2048; src.connect(an);
+  Object.assign(MIC,{stream:st,an,src,buf:new Float32Array(2048),hist:[]}); MIC.timer=setInterval(micTick,45);
+}
+function micStop(){clearInterval(MIC.timer); MIC.timer=null; if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop()); try{MIC.src&&MIC.src.disconnect();}catch(e){} MIC.stream=null; MIC.an=null; MIC.src=null;}
+function micTick(){
+  if(!MIC.an) return; MIC.an.getFloatTimeDomainData(MIC.buf); let out=null;
+  if(performance.now()>(PLAY.busyUntil||0)){const f=yin(MIC.buf,AC.sampleRate);
+    if(f){const m=69+12*Math.log2(f/440); MIC.hist.push(m); if(MIC.hist.length>5) MIC.hist.shift(); const s=[...MIC.hist].sort((a,b)=>a-b), med=s[s.length>>1]; if(Math.abs(m-med)<.6) out=med;}
+    else MIC.hist=[];}
+  else MIC.hist=[];
+  MIC.subs.forEach(fn=>fn(out));
+}
+async function ensureMic(){clearTimeout(MIC.idle); if(MIC.stream) return "mic"; if(MIC.failed) return "self";
+  try{await micStart(); return "mic";}catch(e){MIC.failed=(e&&e.name)||"error"; return "self";}}
+function micIdleLater(){clearTimeout(MIC.idle); MIC.idle=setTimeout(()=>{if(!MIC.subs.size) micStop();},30000);}
+let ACTIVE=null;
+function singStopAll(){if(ACTIVE){ACTIVE.halt(); ACTIVE=null;} MIC.subs.clear(); micStop();}
+document.addEventListener("visibilitychange",()=>{if(document.hidden) singStopAll();});
+const MIC_ICON='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5"/><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+const IN_FRAME=(()=>{try{return window.self!==window.top;}catch(e){return true;}})();
+function micHelpHTML(){const denied=MIC.failed==="NotAllowedError";
+  const why=IN_FRAME?"La page publiée dans Claude bloque le micro. Pour la détection de justesse, utilisez la version installée sur votre téléphone.":"Vérifiez que le micro est autorisé pour cette page dans les réglages du navigateur ou de l’iPhone, puis réessayez.";
+  return `<div class="micnote"><p><b>Mode sans micro.</b> ${denied?"L’accès au micro a été refusé ou bloqué.":"Le micro n’est pas accessible dans cette page."} Écoutez la note, chantez-la, puis réécoutez-la pour comparer et dites si c’était juste.</p><p class="small">${why}</p><button class="btn sm" data-retrymic>Réessayer le micro</button></div>`;}
+const GAUGE=`<div class="gauge" aria-hidden="true"><span class="zone"></span><span class="mid"></span><span class="needle off"></span></div>`;
+
+function singWidget(el,id){
+  const D=SX[id], wid="s"+(++figSeq), isEcho=D.type==="echo", isHold=D.type==="hold", TOL=45;
+  el.outerHTML=`<section class="sing" id="${wid}"><p class="eyebrow">À chanter${D.lecon?` · leçon ${D.lecon}`:""}</p><h3>${D.titre}</h3><p class="small muted">${D.desc}</p>
+<div class="mnote"></div><div class="sfig"></div>
+<div class="snow"><div class="target"><span class="tl">Note à chanter</span><span class="tname">–</span><span class="sung">Vous : –</span></div>
+${GAUGE}<div class="glab"><span>trop bas</span><span>juste</span><span>trop haut</span></div><div class="holdbar" aria-hidden="true"><i></i></div>
+<p class="msg" aria-live="polite">Touchez « Commencer » : la page joue la première note, puis vous écoute.</p></div>
+<div class="self row" hidden><button class="btn" data-s="yes">J’ai chanté juste</button><button class="btn" data-s="no">Pas encore</button></div>
+<div class="row sctl"><button class="btn primary" data-s="go">${MIC_ICON}<span>Commencer</span></button><button class="btn sm" data-s="note">${ICON_PLAY}Réécouter la note</button>${isEcho?"":`<button class="btn sm" data-s="model">${ICON_PLAY}Écouter le modèle</button>`}<button class="btn sm" data-s="skip">Passer</button></div>
+<label class="oct small"><input type="checkbox" data-s="oct" checked> Accepter la même note dans une autre octave</label>
+<div class="sres" hidden></div></section>`;
+  const box=document.getElementById(wid), $=s=>box.querySelector(s);
+  const fig=$(".sfig"), tname=$(".tname"), sung=$(".sung"), needle=$(".needle"), bar=$(".holdbar i"), msg=$(".msg"), go=$('[data-s="go"]'), selfRow=$(".self"), res=$(".sres"), oct=$('[data-s="oct"]'), mnote=$(".mnote");
+  let targets=[], idx=0, hold=0, clean=true, okClean=0, alive=false, running=false, mode="mic", failT=0, figId=null;
+  const api={halt};
+  function buildFig(){
+    if(isEcho){fig.innerHTML=`<div class="fig echo-card"><div class="qmark">?</div><p class="small muted">5 notes à répéter</p></div>`; return;}
+    const r=staffSVG(sxSpec(id)); figId="f"+(++figSeq); FIGS[figId]={lists:[{ev:r.ev,vol:.26}],tempo:D.tempo||72};
+    fig.innerHTML=`<div class="fig" id="${figId}"><div class="scroll">${r.svg}</div><p class="swipe">Faites glisser la portée →</p></div>`;
+    targets=r.ev.filter(e=>e.m!=null).map(e=>({m:e.m,k:e.k[0],beats:e.dur})); markOverflow(fig);
+  }
+  function echoTargets(){const rg=echoRange(), nat=[]; for(let m=rg[0];m<=rg[1];m++) if([0,2,4,5,7,9,11].includes(((m%12)+12)%12)) nat.push(m);
+    const t=[]; while(t.length<5){const m=nat[Math.floor(Math.random()*nat.length)]; if(!t.length||t[t.length-1].m!==m) t.push({m});} return t;}
+  function figEl(){return figId?document.getElementById(figId):null;}
+  function mark(){const f=figEl(); if(!f) return; f.querySelectorAll(".tgt").forEach(e=>e.classList.remove("tgt")); const t=targets[idx]; if(!t) return; const g=f.querySelector(`[data-k="${t.k}"]`); if(g){g.classList.add("tgt"); follow(g);}}
+  const need=()=>isHold?targets[idx].beats*60000/(D.tempo||60):450;
+  function playTarget(){const t=targets[idx], c=ac(); if(t&&c) tone(t.m,c.currentTime+.03,isEcho?1.1:.9,.3);}
+  function setTarget(){hold=0; clean=true; failT=0; bar.style.width="0%"; const t=targets[idx];
+    tname.textContent=isEcho?"?":midiName(t.m);
+    if(isEcho) fig.innerHTML=`<div class="fig echo-card"><div class="qmark">?</div><p class="small muted">Note ${idx+1} sur ${targets.length}</p></div>`;
+    mark(); msg.className="msg";
+    msg.textContent=mode==="mic"?(isHold?"Tenez la note jusqu’à ce que la barre soit pleine.":"Chantez la note et tenez-la un instant."):"Chantez la note, puis réécoutez-la pour comparer.";}
+  function reveal(t){const c=voiceClef(), written=c==="sol8"?t.m+12:t.m;
+    fig.innerHTML=`<div class="fig echo-card">${staffSVG({clef:c,items:[{n:midiP(written),d:"w",t:midiName(t.m),hi:1}],noplay:1,minW:120}).svg}</div>`;}
+  async function start(){
+    if(ACTIVE&&ACTIVE!==api) ACTIVE.halt(); ACTIVE=api; stopAll();
+    if(!ac()){msg.textContent="Le son n’est pas disponible dans ce navigateur."; return;}
+    go.disabled=true; mode=await ensureMic(); go.disabled=false;
+    box.classList.toggle("selfmode",mode==="self"); selfRow.hidden=mode!=="self"; mnote.innerHTML=mode==="self"?micHelpHTML():"";
+    if(isEcho) targets=echoTargets(); else buildFig();
+    idx=0; okClean=0; res.hidden=true; alive=running=true;
+    go.querySelector("span").textContent="Arrêter"; go.classList.remove("primary");
+    if(mode==="mic") MIC.subs.add(onPitch);
+    setTarget(); playTarget();
+  }
+  function halt(){alive=running=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Commencer"; go.classList.add("primary"); needle.classList.add("off");
+    const f=figEl(); if(f) f.querySelectorAll(".tgt").forEach(e=>e.classList.remove("tgt")); if(ACTIVE===api) ACTIVE=null; micIdleLater();}
+  function advance(ok){const t=targets[idx];
+    if(ok&&clean) okClean++;
+    const f=figEl(); if(ok&&f){const g=f.querySelector(`[data-k="${t.k}"]`); g&&g.classList.add("okn");}
+    if(isEcho) reveal(t);
+    idx++; bar.style.width=ok?"100%":"0%";
+    if(idx>=targets.length){finish(); return;}
+    msg.className="msg "+(ok?"good":""); msg.textContent=isEcho?`${ok?"Juste : c":"C"}’était un ${midiName(t.m)}.`:(ok?"Juste !":"Note passée.");
+    running=false; setTimeout(()=>{if(!alive) return; running=true; setTarget(); if(isEcho||mode==="self") playTarget();},isEcho?1700:450);}
+  function finish(){const tot=targets.length, prev=S.chant.ex[id];
+    S.chant.ex[id]={best:Math.max(okClean,prev?prev.best:0),total:tot}; save();
+    res.hidden=false; res.innerHTML=`<p><strong>${okClean} / ${tot}</strong> notes justes du premier coup</p><p>${okClean===tot?"Excellent : votre lecture et votre voix se répondent.":okClean>=tot*.6?"Bien. Refaites l’exercice demain pour gagner en assurance.":"Reprenez plus lentement : écoutez chaque note avant de la chanter."}</p>`;
+    tname.textContent="✓"; msg.className="msg good"; msg.textContent="Exercice terminé."; halt(); go.querySelector("span").textContent="Recommencer";}
+  function onPitch(m){
+    if(!running) return; const t=targets[idx]; if(!t) return;
+    if(m==null){sung.textContent="Vous : –"; needle.classList.add("off"); hold=Math.max(0,hold-(isHold?15:45)); bar.style.width=Math.min(100,hold/need()*100)+"%"; return;}
+    let c=(m-t.m)*100; if(oct.checked) c=((c%1200)+1800)%1200-600;
+    sung.textContent="Vous : "+midiName(m);
+    const ok=Math.abs(c)<=TOL; needle.classList.remove("off"); needle.classList.toggle("ok",ok); needle.style.left=(50+Math.max(-100,Math.min(100,c))/2)+"%";
+    if(ok){hold+=45; if(isHold){msg.className="msg good"; msg.textContent="Tenez…";}}
+    else{hold=Math.max(0,hold-(isHold?30:60)); failT+=45; msg.className="msg"; msg.textContent=(c<0?"Un peu plus haut ↑":"Un peu plus bas ↓")+(failT>9000?" · réécoutez la note si besoin":"");}
+    bar.style.width=Math.min(100,hold/need()*100)+"%";
+    if(hold>=need()) advance(true);
+  }
+  box.addEventListener("click",ev=>{
+    if(ev.target.closest("[data-retrymic]")){MIC.failed=null; halt(); start(); return;}
+    const b=ev.target.closest("[data-s]"); if(!b||b===oct) return; const s=b.dataset.s;
+    if(s==="go"){alive?halt():start(); return;}
+    if(s==="note"){if(alive&&targets[idx]){if(mode==="mic") clean=false; playTarget();} else if(!alive&&targets[0]&&!isEcho){const c=ac(); c&&tone(targets[0].m,c.currentTime+.03,.9,.3);} return;}
+    if(s==="model"&&figId){playFig(figId); return;}
+    if(!alive||!running) return;
+    if(s==="skip"){clean=false; advance(false); return;}
+    if(s==="yes"){advance(true); return;}
+    if(s==="no"){clean=false; msg.className="msg"; msg.textContent="Réécoutez la note et réessayez."; playTarget();}
+  });
+  buildFig();
+  if(!isEcho&&targets[0]) tname.textContent=midiName(targets[0].m);
+}
+
+function freeWidget(el){
+  el.outerHTML=`<section class="sing" id="free"><p class="eyebrow">Ma voix en direct</p><h3>Quelle note je chante ?</h3>
+<p class="small muted">Chantez une note tenue sur « la » : la page affiche son nom et sa place sur votre portée. Glissez doucement de votre note la plus grave à la plus aiguë pour mesurer votre tessiture.</p>
+<div class="mnote"></div><div class="sfig"></div>
+<div class="snow"><div class="target"><span class="tl">Vous chantez</span><span class="tname">–</span></div>${GAUGE}<div class="glab"><span>un peu bas</span><span>au centre de la note</span><span>un peu haut</span></div><p class="msg" aria-live="polite"></p></div>
+<div class="row sctl"><button class="btn primary" data-f="go">${MIC_ICON}<span>Activer le micro</span></button><button class="btn sm" data-f="reset">Effacer ma tessiture</button></div>
+<div class="tess"></div></section>`;
+  const box=document.getElementById("free"), $=s=>box.querySelector(s), fig=$(".sfig"), tname=$(".tname"), needle=$(".needle"), msg=$(".msg"), go=$('[data-f="go"]'), tess=$(".tess");
+  let alive=false, last=null, since=0, shown=null; const api={halt};
+  function draw(m){const c=voiceClef(); let items=[];
+    if(m!=null&&m>30&&m<90){const written=c==="sol8"?m+12:m; items=[{n:midiP(written),d:"w",hi:1}];}
+    fig.innerHTML=`<div class="fig echo-card">${staffSVG({clef:c,items,noplay:1,minW:150}).svg}</div>`;}
+  function drawTess(){const r=S.chant.range;
+    if(r.lo==null){tess.innerHTML=`<p class="small muted">Tessiture : pas encore mesurée.</p>`; return;}
+    const c=voiceClef(), wr=m=>c==="sol8"?m+12:m;
+    tess.innerHTML=`<p class="small"><b>Ma tessiture mesurée</b> : de ${midiName(r.lo)} à ${midiName(r.hi)} (${r.hi-r.lo} demi-tons). Elle sert à choisir les notes de « Répéter une note ».</p><div class="fig echo-card">${staffSVG({clef:c,items:[{n:midiP(wr(r.lo)),d:"w",t:"grave"},{n:midiP(wr(r.hi)),d:"w",t:"aigu"}],noplay:1,minW:160}).svg}</div>`;}
+  function onPitch(m){if(m==null){needle.classList.add("off"); since=0; last=null; return;}
+    const r=Math.round(m), c=(m-r)*100; tname.textContent=midiName(m); needle.classList.remove("off"); needle.classList.toggle("ok",Math.abs(c)<=25); needle.style.left=(50+c)+"%";
+    if(r!==shown){draw(r); shown=r;}
+    if(r===last){since+=45; if(since>=600&&r>=33&&r<=88){const R=S.chant.range; let ch=false; if(R.lo==null||r<R.lo){R.lo=r;ch=true;} if(R.hi==null||r>R.hi){R.hi=r;ch=true;} if(ch){save(); drawTess();}}} else {last=r; since=0;}}
+  async function start(){if(ACTIVE&&ACTIVE!==api) ACTIVE.halt(); ACTIVE=api; stopAll(); if(!ac()) return;
+    go.disabled=true; const mode=await ensureMic(); go.disabled=false;
+    if(mode!=="mic"){$(".mnote").innerHTML=micHelpHTML().replace("Écoutez la note, chantez-la, puis réécoutez-la pour comparer et dites si c’était juste.","Cette partie a besoin du micro pour fonctionner."); if(ACTIVE===api) ACTIVE=null; return;}
+    $(".mnote").innerHTML=""; alive=true; MIC.subs.add(onPitch); go.querySelector("span").textContent="Arrêter"; go.classList.remove("primary"); msg.textContent="Chantez…";}
+  function halt(){alive=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Activer le micro"; go.classList.add("primary"); needle.classList.add("off"); msg.textContent=""; if(ACTIVE===api) ACTIVE=null; micIdleLater();}
+  box.addEventListener("click",ev=>{
+    if(ev.target.closest("[data-retrymic]")){MIC.failed=null; start(); return;}
+    const b=ev.target.closest("[data-f]"); if(!b) return;
+    if(b.dataset.f==="go"){alive?halt():start();}
+    if(b.dataset.f==="reset"){S.chant.range={lo:null,hi:null}; save(); drawTess();}
+  });
+  draw(null); drawTess();
+}
+
+function viewChant(){
+  const voiceBtns=Object.keys(VOICES).map(v=>`<button class="btn sm" data-voice="${v}" aria-pressed="${S.voice===v}">${VNAME[VOICES[v]]}</button>`).join("");
+  const list=Object.keys(SX).map(id=>{const D=SX[id], r=S.chant.ex[id];
+    return `<details class="sx"><summary><span class="ln-num">${D.lecon}</span><span><span class="lt">${D.titre}</span><br><span class="small muted">Leçon ${D.lecon}</span></span><span class="st ${r?"done":"todo"}">${r?`${r.best}/${r.total}`:"À faire"}</span></summary><div class="w-sing" data-sx="${id}"></div></details>`;}).join("");
+  return `<p class="eyebrow">De la lecture à la voix</p><h1>Chanter</h1>
+<p class="lead">Chantez les notes que vous apprenez à lire. La page écoute votre voix au micro et vous indique si vous chantez juste, trop haut ou trop bas.</p>
+<section class="panel"><h2>Votre voix</h2><p class="small muted">Les exercices s’écrivent dans votre clé et à votre hauteur.</p><div class="chips">${voiceBtns}</div></section>
+<section class="panel"><h2>Avant de commencer</h2><ul class="tips">
+<li>Installez-vous au calme, téléphone posé à 30 cm de la bouche.</li>
+<li>Chantez sur « la » ou sur le nom des notes, d’une voix posée, sans forcer.</li>
+<li>Tenez la note : la barre verte se remplit quand vous êtes juste.</li>
+<li>La page n’écoute pas pendant qu’elle joue une note : chantez après le son.</li>
+<li>« Accepter une autre octave » laisse chanter la bonne note plus haut ou plus bas que celle écrite, par exemple pour une voix d’homme sur une ligne de soprano.</li>
+<li>Sur iPhone, désactivez le mode silencieux pour entendre les notes.</li></ul></section>
+<div class="w-free"></div>
+<h2>Exercices</h2><p class="small muted">Chaque exercice reprend une leçon. Touchez-en un pour l’ouvrir.</p>
+${list}`;
+}
+
+/* ---------- Événements globaux ---------- */
+document.addEventListener("click",ev=>{
+  const p=ev.target.closest("[data-play]"); if(p){playFig(p.dataset.play); return;}
+  const so=ev.target.closest("[data-solo]"); if(so){playFig(so.dataset.solo,so.dataset.v); return;}
+  const mi=ev.target.closest("[data-mine]"); if(mi){playMine(mi.dataset.mine,mi.dataset.v); return;}
+  if(ev.target.closest("[data-stop]")){stopAll(); return;}
+  const nm=ev.target.closest("[data-names]"); if(nm){const f=document.getElementById(nm.dataset.names); const on=f.classList.toggle("show-names"); nm.setAttribute("aria-pressed",on); nm.textContent=on?"Masquer les noms":"Afficher les noms"; return;}
+  const v=ev.target.closest("[data-voice]"); if(v){S.voice=S.voice===v.dataset.voice?"":v.dataset.voice; save(); document.querySelectorAll("[data-voice]").forEach(b=>b.setAttribute("aria-pressed",S.voice===b.dataset.voice));
+    if(location.hash==="#chant"){const y=window.scrollY; route(); window.scrollTo(0,y);} return;}
+  const d=ev.target.closest("[data-done]"); if(d){const id=+d.dataset.done; S.done[id]=!S.done[id]; if(S.done[id]&&S.last===id) S.last=id<10?id+1:id; save();
+    d.className="btn "+(S.done[id]?"isdone":"primary"); d.textContent=S.done[id]?"Leçon terminée ✓ (annuler)":"Marquer la leçon comme terminée"; return;}
+  const n=ev.target.closest(".staff [data-m]"); if(n){const c=ac(); if(!c) return; tone(+n.dataset.m,c.currentTime+.02,.8,.24); n.classList.add("on"); setTimeout(()=>n.classList.remove("on"),500);}
+});
+let noteTimer=null;
+document.addEventListener("input",ev=>{const t=ev.target.closest("[data-note]"); if(!t) return; S.notes[t.dataset.note]=t.value; clearTimeout(noteTimer); noteTimer=setTimeout(save,400);});
+
+function route(){
+  stopAll(); singStopAll(); let hsh=(location.hash||"").replace("#","")||"accueil"; let html, nav=hsh;
+  const m=/^lecon-(\d+)$/.exec(hsh);
+  if(m&&+m[1]>=1&&+m[1]<=10){html=viewLesson(+m[1]); nav="accueil";}
+  else if(hsh==="entrainement") html=viewTrain();
+  else if(hsh==="lexique") html=viewLex();
+  else if(hsh==="chant") html=viewChant();
+  else if(hsh==="sauvegarde") html=viewSave();
+  else {html=viewHome(); nav="accueil";}
+  $view.innerHTML=html; hydrate($view);
+  document.querySelectorAll("[data-nav]").forEach(a=>{if(a.dataset.nav===nav) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");});
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+updateStatus(); updateProgress(); route();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"){addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{});});}</script>
+</body>
+</html>

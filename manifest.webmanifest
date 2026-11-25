@@ -1,0 +1,30 @@
+{
+  "name": "Solfège du choriste",
+  "short_name": "Solfège",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "fr",
+  "background_color": "#F3F4F7",
+  "theme_color": "#FFFFFF",
+  "description": "Tutoriel de solfège pour choriste débutant",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
