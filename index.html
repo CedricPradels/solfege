@@ -230,11 +230,23 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padd
 .gauge .needle{position:absolute;top:5px;bottom:5px;left:50%;width:10px;margin-left:-5px;border-radius:5px;background:var(--warn);transition:left .09s linear}
 .gauge .needle.ok{background:var(--ok)}
 .gauge .needle.off{opacity:0}
+.gauge .needle.wait{background:var(--muted);opacity:.45;animation:wait 1.4s ease-in-out infinite}
+.gauge .needle.stale{background:var(--muted);opacity:.6}
+@keyframes wait{50%{opacity:.15}}
+.vu{display:flex;align-items:center;gap:8px;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.vub{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.vub i{display:block;height:100%;width:0;background:var(--play);transition:width .08s linear}
+.stale{opacity:.5}
+.legend{margin:6px 10px 0;color:var(--muted)}
+.lg-t{color:var(--rubric)} .lg-me{color:var(--play);margin-left:12px}
+.staff .me circle{fill:var(--play)} .staff .me line{stroke:var(--play);stroke-width:2.2}
+.staff .me{transition:transform .12s linear}
+.staff .me.stale{opacity:.35}
 .glab{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
 .holdbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
 .holdbar i{display:block;height:100%;width:0;background:var(--ok);transition:width .09s linear}
 .sing .self{margin-bottom:10px}
-.sing.selfmode .gauge,.sing.selfmode .glab,.sing.selfmode .holdbar,.sing.selfmode .sung{display:none}
+.sing.selfmode .gauge,.sing.selfmode .glab,.sing.selfmode .holdbar,.sing.selfmode .sung,.sing.selfmode .vu,.sing.selfmode .legend{display:none}
 .oct{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--muted)}
 .oct input{width:22px;height:22px;accent-color:var(--play);flex:none}
 .sres{background:var(--ok-soft);border-radius:var(--radius);padding:12px 16px;margin-top:12px}
@@ -278,11 +290,10 @@ details.sx .sing{border:0;margin:0!important;border-radius:0}
   .tabbar{grid-template-columns:repeat(5,1fr)}
   .tabbar a{font-size:.68rem}
 }
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-
 <header class="top">
   <div class="top-in gut col">
     <a class="brand" href="#accueil">Solfège <span>du</span> choriste</a>
@@ -1136,33 +1147,63 @@ const SX={
 function sxSpec(id){const D=SX[id]; let sp=D.spec(); sp=Object.assign({},sp,{items:sp.items.map(it=>it.n?Object.assign({},it,{hi:0}):it)});
   if(!D.own){const c=voiceClef(); sp.clef=c; if(c==="fa") sp.items=down8(sp.items);} return sp;}
 
-/* Détection de hauteur (algorithme YIN) */
-function yin(buf,sr){
-  const N=buf.length, half=N>>1; let rms=0; for(let i=0;i<N;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/N); if(rms<.01) return null;
-  const tMin=Math.floor(sr/1100), tMax=Math.min(half-2,Math.floor(sr/65)), d=new Float32Array(tMax+2);
-  for(let t=1;t<=tMax+1;t++){let s=0; for(let i=0;i<half;i++){const x=buf[i]-buf[i+t]; s+=x*x;} d[t]=s;}
+/* Détection de hauteur : YIN sur ~85 ms de son (ramené à mi-fréquence d'échantillonnage pour alléger le calcul),
+   choix de l'octave la plus cohérente avec la note entendue juste avant, puis lissage. */
+const STEP12=[0,.5,1,1.5,2,3,3.5,4,4.5,5,5.5,6];
+function pitchCands(x,sr){
+  const N=x.length, half=N>>1;
+  const tMin=Math.max(2,Math.floor(sr/1050)), tMax=Math.min(half-2,Math.floor(sr/62)), d=new Float32Array(tMax+2);
+  for(let t=1;t<=tMax+1;t++){let s=0; for(let i=0;i<half;i++){const v=x[i]-x[i+t]; s+=v*v;} d[t]=s;}
   d[0]=1; let run=0; for(let t=1;t<=tMax+1;t++){run+=d[t]; d[t]=run?d[t]*t/run:1;}
   let tau=-1; for(let t=tMin;t<=tMax;t++){if(d[t]<.15){while(t+1<=tMax&&d[t+1]<d[t]) t++; tau=t; break;}}
-  if(tau<2) return null;
-  const x0=d[tau-1], x1=d[tau], x2=d[tau+1], den=x0+x2-2*x1, sh=den?(x0-x2)/(2*den):0;
-  return sr/(tau+sh);
+  if(tau<0){let g=tMin; for(let t=tMin;t<=tMax;t++) if(d[t]<d[g]) g=t; if(d[g]<.35) tau=g; else return null;}
+  const lm=c=>{const lo=Math.max(tMin,Math.floor(c*.96)), hi=Math.min(tMax,Math.ceil(c*1.04)); let m=lo; for(let t=lo;t<=hi;t++) if(d[t]<d[m]) m=t; return m;};
+  const fine=t=>{const x0=d[t-1], x1=d[t], x2=d[t+1], den=x0+x2-2*x1; return t+(den?Math.max(-1,Math.min(1,(x0-x2)/(2*den))):0);};
+  const toM=t=>69+12*Math.log2(sr/fine(t)/440);
+  const out=[{m:toM(tau),d:d[tau]}];
+  if(tau*2<=tMax){const c=lm(tau*2); out.push({m:toM(c),d:d[c]});}
+  if(tau/2>=tMin){const c=lm(tau/2); out.push({m:toM(c),d:d[c]});}
+  return out;
 }
-const MIC={stream:null,an:null,src:null,buf:null,timer:null,subs:new Set(),hist:[],failed:null,idle:null};
+const MIC={stream:null,an:null,src:null,buf:null,ds:null,timer:null,subs:new Set(),failed:null,idle:null,cur:null,hist:[],lastT:0,octN:0,level:0,lastTick:0};
 async function micStart(){
   const c=ac(); if(!c) throw new Error("audio");
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error("unsupported");
   const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  const src=c.createMediaStreamSource(st), an=c.createAnalyser(); an.fftSize=2048; src.connect(an);
-  Object.assign(MIC,{stream:st,an,src,buf:new Float32Array(2048),hist:[]}); MIC.timer=setInterval(micTick,45);
+  const src=c.createMediaStreamSource(st), an=c.createAnalyser(); an.fftSize=4096; src.connect(an);
+  Object.assign(MIC,{stream:st,an,src,buf:new Float32Array(4096),ds:new Float32Array(2048),lastTick:0}); micReset(); MIC.timer=setInterval(micTick,40);
 }
-function micStop(){clearInterval(MIC.timer); MIC.timer=null; if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop()); try{MIC.src&&MIC.src.disconnect();}catch(e){} MIC.stream=null; MIC.an=null; MIC.src=null;}
+function micStop(){clearInterval(MIC.timer); MIC.timer=null; if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop()); try{MIC.src&&MIC.src.disconnect();}catch(e){} MIC.stream=null; MIC.an=null; MIC.src=null; MIC.level=0;}
+function micReset(){MIC.cur=null; MIC.hist=[]; MIC.octN=0; MIC.lastT=0;}
 function micTick(){
-  if(!MIC.an) return; MIC.an.getFloatTimeDomainData(MIC.buf); let out=null;
-  if(performance.now()>(PLAY.busyUntil||0)){const f=yin(MIC.buf,AC.sampleRate);
-    if(f){const m=69+12*Math.log2(f/440); MIC.hist.push(m); if(MIC.hist.length>5) MIC.hist.shift(); const s=[...MIC.hist].sort((a,b)=>a-b), med=s[s.length>>1]; if(Math.abs(m-med)<.6) out=med;}
-    else MIC.hist=[];}
-  else MIC.hist=[];
-  MIC.subs.forEach(fn=>fn(out));
+  if(!MIC.an) return; const now=performance.now(), dt=MIC.lastTick?Math.min(120,now-MIC.lastTick):40; MIC.lastTick=now;
+  const b=MIC.buf; MIC.an.getFloatTimeDomainData(b);
+  let s2=0; for(let i=0;i<b.length;i++) s2+=b[i]*b[i]; const rms=Math.sqrt(s2/b.length);
+  MIC.level=MIC.level*.6+Math.max(0,Math.min(1,(20*Math.log10(rms+1e-9)+62)/50))*.4;
+  const busy=now<(PLAY.busyUntil||0);
+  if(busy) micReset();
+  else if(rms>.004){
+    const ds=MIC.ds; for(let i=0;i<ds.length;i++) ds[i]=(b[2*i]+b[2*i+1])*.5;
+    const cs=pitchCands(ds,AC.sampleRate/2);
+    if(cs){
+      const raw=cs[0]; let pick=raw;
+      if(MIC.cur!=null){let bc=Infinity; cs.forEach(c=>{if(c.d<Math.max(.3,raw.d+.12)){const cost=Math.abs(c.m-MIC.cur)+c.d*10; if(cost<bc){bc=cost; pick=c;}}});}
+      // un vrai saut d'octave finit par s'imposer s'il dure plus d'un tiers de seconde
+      if(Math.abs(raw.m-pick.m)>6){if(++MIC.octN>=8){pick=raw; MIC.cur=null; MIC.hist=[]; MIC.octN=0;}} else MIC.octN=0;
+      const m=pick.m;
+      if(m>=38&&m<=93){
+        MIC.hist.push(m); if(MIC.hist.length>5) MIC.hist.shift();
+        const so=[...MIC.hist].sort((p,q)=>p-q), med=so[so.length>>1];
+        if(MIC.cur==null){if(so.length>=3&&so[so.length-1]-so[0]<1.2) MIC.cur=med;}
+        else if(Math.abs(med-MIC.cur)>1.5) MIC.cur=med;   // nouvelle note : on la suit tout de suite
+        else MIC.cur+=(med-MIC.cur)*.45;                  // même note : lissage
+        if(MIC.cur!=null) MIC.lastT=now;
+      }
+    }
+  }
+  if(MIC.cur!=null&&now-MIC.lastT>1600) micReset();
+  const st={m:MIC.cur,fresh:MIC.cur!=null&&now-MIC.lastT<140,level:MIC.level,dt,busy};
+  MIC.subs.forEach(fn=>fn(st));
 }
 async function ensureMic(){clearTimeout(MIC.idle); if(MIC.stream) return "mic"; if(MIC.failed) return "self";
   try{await micStart(); return "mic";}catch(e){MIC.failed=(e&&e.name)||"error"; return "self";}}
@@ -1176,33 +1217,48 @@ function micHelpHTML(){const denied=MIC.failed==="NotAllowedError";
   const why=IN_FRAME?"La page publiée dans Claude bloque le micro. Pour la détection de justesse, utilisez la version installée sur votre téléphone.":"Vérifiez que le micro est autorisé pour cette page dans les réglages du navigateur ou de l’iPhone, puis réessayez.";
   return `<div class="micnote"><p><b>Mode sans micro.</b> ${denied?"L’accès au micro a été refusé ou bloqué.":"Le micro n’est pas accessible dans cette page."} Écoutez la note, chantez-la, puis réécoutez-la pour comparer et dites si c’était juste.</p><p class="small">${why}</p><button class="btn sm" data-retrymic>Réessayer le micro</button></div>`;}
 const GAUGE=`<div class="gauge" aria-hidden="true"><span class="zone"></span><span class="mid"></span><span class="needle off"></span></div>`;
+const VU=`<div class="vu" aria-hidden="true"><span>Micro</span><div class="vub"><i></i></div></div>`;
+
+function distText(c){const s=Math.round(Math.abs(c)/100);
+  if(s>=1) return `Trop ${c<0?"bas":"haut"} d’environ ${s} demi-ton${s>1?"s":""} : ${c<0?"montez ↑":"descendez ↓"}`;
+  return c<0?"Presque : un peu plus haut ↑":"Presque : un peu plus bas ↓";}
+function noSoundText(level){return level<.22?"Je ne vous entends pas encore : chantez un peu plus fort ou rapprochez le téléphone.":"Tenez un son clair et régulier, sur « la » ou sur le nom de la note.";}
 
 function singWidget(el,id){
-  const D=SX[id], wid="s"+(++figSeq), isEcho=D.type==="echo", isHold=D.type==="hold", TOL=45;
+  const D=SX[id], wid="s"+(++figSeq), isEcho=D.type==="echo", isHold=D.type==="hold", TOL=50;
   el.outerHTML=`<section class="sing" id="${wid}"><p class="eyebrow">À chanter${D.lecon?` · leçon ${D.lecon}`:""}</p><h3>${D.titre}</h3><p class="small muted">${D.desc}</p>
 <div class="mnote"></div><div class="sfig"></div>
 <div class="snow"><div class="target"><span class="tl">Note à chanter</span><span class="tname">–</span><span class="sung">Vous : –</span></div>
-${GAUGE}<div class="glab"><span>trop bas</span><span>juste</span><span>trop haut</span></div><div class="holdbar" aria-hidden="true"><i></i></div>
+${GAUGE}<div class="glab"><span>trop bas</span><span>juste</span><span>trop haut</span></div><div class="holdbar" aria-hidden="true"><i></i></div>${VU}
 <p class="msg" aria-live="polite">Touchez « Commencer » : la page joue la première note, puis vous écoute.</p></div>
 <div class="self row" hidden><button class="btn" data-s="yes">J’ai chanté juste</button><button class="btn" data-s="no">Pas encore</button></div>
 <div class="row sctl"><button class="btn primary" data-s="go">${MIC_ICON}<span>Commencer</span></button><button class="btn sm" data-s="note">${ICON_PLAY}Réécouter la note</button>${isEcho?"":`<button class="btn sm" data-s="model">${ICON_PLAY}Écouter le modèle</button>`}<button class="btn sm" data-s="skip">Passer</button></div>
 <label class="oct small"><input type="checkbox" data-s="oct" checked> Accepter la même note dans une autre octave</label>
 <div class="sres" hidden></div></section>`;
   const box=document.getElementById(wid), $=s=>box.querySelector(s);
-  const fig=$(".sfig"), tname=$(".tname"), sung=$(".sung"), needle=$(".needle"), bar=$(".holdbar i"), msg=$(".msg"), go=$('[data-s="go"]'), selfRow=$(".self"), res=$(".sres"), oct=$('[data-s="oct"]'), mnote=$(".mnote");
-  let targets=[], idx=0, hold=0, clean=true, okClean=0, alive=false, running=false, mode="mic", failT=0, figId=null;
+  const fig=$(".sfig"), tname=$(".tname"), sung=$(".sung"), needle=$(".needle"), bar=$(".holdbar i"), vu=$(".vub i"), msg=$(".msg"), go=$('[data-s="go"]'), selfRow=$(".self"), res=$(".sres"), oct=$('[data-s="oct"]'), mnote=$(".mnote");
+  let targets=[], idx=0, hold=0, clean=true, okClean=0, alive=false, running=false, mode="mic", failT=0, figId=null, figClef="sol";
   const api={halt};
   function buildFig(){
     if(isEcho){fig.innerHTML=`<div class="fig echo-card"><div class="qmark">?</div><p class="small muted">5 notes à répéter</p></div>`; return;}
-    const r=staffSVG(sxSpec(id)); figId="f"+(++figSeq); FIGS[figId]={lists:[{ev:r.ev,vol:.26}],tempo:D.tempo||72};
-    fig.innerHTML=`<div class="fig" id="${figId}"><div class="scroll">${r.svg}</div><p class="swipe">Faites glisser la portée →</p></div>`;
+    const sp=sxSpec(id), r=staffSVG(sp); figClef=sp.clef||"sol"; figId="f"+(++figSeq); FIGS[figId]={lists:[{ev:r.ev,vol:.26}],tempo:D.tempo||72};
+    fig.innerHTML=`<div class="fig" id="${figId}"><div class="scroll">${r.svg}</div><p class="swipe">Faites glisser la portée →</p><p class="legend small"><span class="lg-t">●</span> note à chanter <span class="lg-me">●</span> votre voix</p></div>`;
     targets=r.ev.filter(e=>e.m!=null).map(e=>({m:e.m,k:e.k[0],beats:e.dur})); markOverflow(fig);
   }
   function echoTargets(){const rg=echoRange(), nat=[]; for(let m=rg[0];m<=rg[1];m++) if([0,2,4,5,7,9,11].includes(((m%12)+12)%12)) nat.push(m);
     const t=[]; while(t.length<5){const m=nat[Math.floor(Math.random()*nat.length)]; if(!t.length||t[t.length-1].m!==m) t.push({m});} return t;}
   function figEl(){return figId?document.getElementById(figId):null;}
   function mark(){const f=figEl(); if(!f) return; f.querySelectorAll(".tgt").forEach(e=>e.classList.remove("tgt")); const t=targets[idx]; if(!t) return; const g=f.querySelector(`[data-k="${t.k}"]`); if(g){g.classList.add("tgt"); follow(g);}}
-  const need=()=>isHold?targets[idx].beats*60000/(D.tempo||60):450;
+  // Point violet sur la portée, à côté de la note à chanter, à la hauteur de la voix entendue
+  function placeMe(t,mm,stale){const f=figEl(); if(!f) return; const svg=f.querySelector("svg.staff"); if(!svg) return;
+    let me=svg.querySelector(".me"); if(!me){svg.insertAdjacentHTML("beforeend",`<g class="me"><line x1="-8" x2="8" y1="0" y2="0"/><circle r="5.5"/></g>`); me=svg.querySelector(".me");}
+    const hit=f.querySelector(`[data-k="${t.k}"] .hit`); if(!hit) return;
+    const x=hit.x.baseVal.value+13+19, mw=Math.round(figClef==="sol8"?mm+12:mm), pc=((mw%12)+12)%12;
+    const dia=(Math.floor(mw/12)-1)*7+STEP12[pc], ref=figClef==="fa"?18:30, y=Math.max(6,Math.min(svg.viewBox.baseVal.height-6,74-(dia-ref)*5));
+    me.style.transform=`translate(${x}px,${y}px)`; me.classList.toggle("stale",!!stale);}
+  function meStale(){const f=figEl(); const me=f&&f.querySelector(".me"); if(me) me.classList.add("stale");}
+  function meRemove(){const f=figEl(); const me=f&&f.querySelector(".me"); if(me) me.remove();}
+  const need=()=>isHold?targets[idx].beats*60000/(D.tempo||60):500;
   function playTarget(){const t=targets[idx], c=ac(); if(t&&c) tone(t.m,c.currentTime+.03,isEcho?1.1:.9,.3);}
   function setTarget(){hold=0; clean=true; failT=0; bar.style.width="0%"; const t=targets[idx];
     tname.textContent=isEcho?"?":midiName(t.m);
@@ -1219,10 +1275,10 @@ ${GAUGE}<div class="glab"><span>trop bas</span><span>juste</span><span>trop haut
     if(isEcho) targets=echoTargets(); else buildFig();
     idx=0; okClean=0; res.hidden=true; alive=running=true;
     go.querySelector("span").textContent="Arrêter"; go.classList.remove("primary");
-    if(mode==="mic") MIC.subs.add(onPitch);
+    if(mode==="mic"){MIC.subs.add(onPitch); needle.className="needle wait"; needle.style.left="50%";}
     setTarget(); playTarget();
   }
-  function halt(){alive=running=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Commencer"; go.classList.add("primary"); needle.classList.add("off");
+  function halt(){alive=running=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Commencer"; go.classList.add("primary"); needle.className="needle off"; vu.style.width="0%"; meRemove();
     const f=figEl(); if(f) f.querySelectorAll(".tgt").forEach(e=>e.classList.remove("tgt")); if(ACTIVE===api) ACTIVE=null; micIdleLater();}
   function advance(ok){const t=targets[idx];
     if(ok&&clean) okClean++;
@@ -1235,15 +1291,23 @@ ${GAUGE}<div class="glab"><span>trop bas</span><span>juste</span><span>trop haut
   function finish(){const tot=targets.length, prev=S.chant.ex[id];
     S.chant.ex[id]={best:Math.max(okClean,prev?prev.best:0),total:tot}; save();
     res.hidden=false; res.innerHTML=`<p><strong>${okClean} / ${tot}</strong> notes justes du premier coup</p><p>${okClean===tot?"Excellent : votre lecture et votre voix se répondent.":okClean>=tot*.6?"Bien. Refaites l’exercice demain pour gagner en assurance.":"Reprenez plus lentement : écoutez chaque note avant de la chanter."}</p>`;
-    tname.textContent="✓"; msg.className="msg good"; msg.textContent="Exercice terminé."; halt(); go.querySelector("span").textContent="Recommencer";}
-  function onPitch(m){
+    tname.textContent="✓"; halt(); msg.className="msg good"; msg.textContent="Exercice terminé."; go.querySelector("span").textContent="Recommencer";}
+  function onPitch(st){
+    vu.style.width=Math.round(st.level*100)+"%";
     if(!running) return; const t=targets[idx]; if(!t) return;
-    if(m==null){sung.textContent="Vous : –"; needle.classList.add("off"); hold=Math.max(0,hold-(isHold?15:45)); bar.style.width=Math.min(100,hold/need()*100)+"%"; return;}
-    let c=(m-t.m)*100; if(oct.checked) c=((c%1200)+1800)%1200-600;
-    sung.textContent="Vous : "+midiName(m);
-    const ok=Math.abs(c)<=TOL; needle.classList.remove("off"); needle.classList.toggle("ok",ok); needle.style.left=(50+Math.max(-100,Math.min(100,c))/2)+"%";
-    if(ok){hold+=45; if(isHold){msg.className="msg good"; msg.textContent="Tenez…";}}
-    else{hold=Math.max(0,hold-(isHold?30:60)); failT+=45; msg.className="msg"; msg.textContent=(c<0?"Un peu plus haut ↑":"Un peu plus bas ↓")+(failT>9000?" · réécoutez la note si besoin":"");}
+    if(st.m==null){
+      needle.className="needle wait"; needle.style.left="50%"; sung.classList.add("stale"); meStale();
+      if(!st.busy){hold=Math.max(0,hold-st.dt*(isHold?.3:.6)); msg.className="msg"; msg.textContent=noSoundText(st.level);}
+      bar.style.width=Math.min(100,hold/need()*100)+"%"; return;}
+    let c=(st.m-t.m)*100; if(oct.checked) c=((c%1200)+1800)%1200-600;
+    const ok=Math.abs(c)<=TOL;
+    needle.className="needle"+(st.fresh?(ok?" ok":""):" stale"); needle.style.left=(50+Math.max(-100,Math.min(100,c))/2)+"%";
+    sung.textContent="Vous : "+midiName(st.m); sung.classList.toggle("stale",!st.fresh);
+    placeMe(t,t.m+c/100,!st.fresh);
+    if(st.fresh){
+      if(ok){hold+=st.dt; msg.className="msg good"; msg.textContent=isHold?"Juste, tenez…":"Juste, tenez encore un instant…";}
+      else{hold=Math.max(0,hold-st.dt*(isHold?.5:1)); failT+=st.dt; msg.className="msg"; msg.textContent=distText(c)+(failT>9000?" · réécoutez la note si besoin":"");}
+    } // coupure brève : la progression est gardée, l'aiguille reste en gris sur la dernière note
     bar.style.width=Math.min(100,hold/need()*100)+"%";
     if(hold>=need()) advance(true);
   }
@@ -1266,10 +1330,10 @@ function freeWidget(el){
   el.outerHTML=`<section class="sing" id="free"><p class="eyebrow">Ma voix en direct</p><h3>Quelle note je chante ?</h3>
 <p class="small muted">Chantez une note tenue sur « la » : la page affiche son nom et sa place sur votre portée. Glissez doucement de votre note la plus grave à la plus aiguë pour mesurer votre tessiture.</p>
 <div class="mnote"></div><div class="sfig"></div>
-<div class="snow"><div class="target"><span class="tl">Vous chantez</span><span class="tname">–</span></div>${GAUGE}<div class="glab"><span>un peu bas</span><span>au centre de la note</span><span>un peu haut</span></div><p class="msg" aria-live="polite"></p></div>
+<div class="snow"><div class="target"><span class="tl">Vous chantez</span><span class="tname">–</span></div>${GAUGE}<div class="glab"><span>un peu bas</span><span>au centre de la note</span><span>un peu haut</span></div>${VU}<p class="msg" aria-live="polite"></p></div>
 <div class="row sctl"><button class="btn primary" data-f="go">${MIC_ICON}<span>Activer le micro</span></button><button class="btn sm" data-f="reset">Effacer ma tessiture</button></div>
 <div class="tess"></div></section>`;
-  const box=document.getElementById("free"), $=s=>box.querySelector(s), fig=$(".sfig"), tname=$(".tname"), needle=$(".needle"), msg=$(".msg"), go=$('[data-f="go"]'), tess=$(".tess");
+  const box=document.getElementById("free"), $=s=>box.querySelector(s), fig=$(".sfig"), tname=$(".tname"), needle=$(".needle"), vu=$(".vub i"), msg=$(".msg"), go=$('[data-f="go"]'), tess=$(".tess");
   let alive=false, last=null, since=0, shown=null; const api={halt};
   function draw(m){const c=voiceClef(); let items=[];
     if(m!=null&&m>30&&m<90){const written=c==="sol8"?m+12:m; items=[{n:midiP(written),d:"w",hi:1}];}
@@ -1278,15 +1342,23 @@ function freeWidget(el){
     if(r.lo==null){tess.innerHTML=`<p class="small muted">Tessiture : pas encore mesurée.</p>`; return;}
     const c=voiceClef(), wr=m=>c==="sol8"?m+12:m;
     tess.innerHTML=`<p class="small"><b>Ma tessiture mesurée</b> : de ${midiName(r.lo)} à ${midiName(r.hi)} (${r.hi-r.lo} demi-tons). Elle sert à choisir les notes de « Répéter une note ».</p><div class="fig echo-card">${staffSVG({clef:c,items:[{n:midiP(wr(r.lo)),d:"w",t:"grave"},{n:midiP(wr(r.hi)),d:"w",t:"aigu"}],noplay:1,minW:160}).svg}</div>`;}
-  function onPitch(m){if(m==null){needle.classList.add("off"); since=0; last=null; return;}
-    const r=Math.round(m), c=(m-r)*100; tname.textContent=midiName(m); needle.classList.remove("off"); needle.classList.toggle("ok",Math.abs(c)<=25); needle.style.left=(50+c)+"%";
+  function onPitch(st){
+    vu.style.width=Math.round(st.level*100)+"%";
+    if(!alive) return;
+    if(st.m==null){needle.className="needle wait"; needle.style.left="50%"; tname.classList.add("stale"); fig.classList.add("stale"); if(!st.busy){msg.className="msg"; msg.textContent=noSoundText(st.level);} last=null; since=0; return;}
+    const r=Math.round(st.m), c=(st.m-r)*100;
+    tname.textContent=midiName(st.m); tname.classList.toggle("stale",!st.fresh); fig.classList.toggle("stale",!st.fresh);
+    needle.className="needle"+(st.fresh?(Math.abs(c)<=25?" ok":""):" stale"); needle.style.left=(50+c)+"%";
     if(r!==shown){draw(r); shown=r;}
-    if(r===last){since+=45; if(since>=600&&r>=33&&r<=88){const R=S.chant.range; let ch=false; if(R.lo==null||r<R.lo){R.lo=r;ch=true;} if(R.hi==null||r>R.hi){R.hi=r;ch=true;} if(ch){save(); drawTess();}}} else {last=r; since=0;}}
+    if(st.fresh){msg.className="msg good"; msg.textContent="Je vous entends.";
+      if(r===last){since+=st.dt; if(since>=600&&r>=33&&r<=88){const R=S.chant.range; let ch=false; if(R.lo==null||r<R.lo){R.lo=r;ch=true;} if(R.hi==null||r>R.hi){R.hi=r;ch=true;} if(ch){save(); drawTess();}}}
+      else{last=r; since=0;}}
+  }
   async function start(){if(ACTIVE&&ACTIVE!==api) ACTIVE.halt(); ACTIVE=api; stopAll(); if(!ac()) return;
     go.disabled=true; const mode=await ensureMic(); go.disabled=false;
     if(mode!=="mic"){$(".mnote").innerHTML=micHelpHTML().replace("Écoutez la note, chantez-la, puis réécoutez-la pour comparer et dites si c’était juste.","Cette partie a besoin du micro pour fonctionner."); if(ACTIVE===api) ACTIVE=null; return;}
-    $(".mnote").innerHTML=""; alive=true; MIC.subs.add(onPitch); go.querySelector("span").textContent="Arrêter"; go.classList.remove("primary"); msg.textContent="Chantez…";}
-  function halt(){alive=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Activer le micro"; go.classList.add("primary"); needle.classList.add("off"); msg.textContent=""; if(ACTIVE===api) ACTIVE=null; micIdleLater();}
+    $(".mnote").innerHTML=""; alive=true; MIC.subs.add(onPitch); needle.className="needle wait"; needle.style.left="50%"; go.querySelector("span").textContent="Arrêter"; go.classList.remove("primary"); msg.textContent="Chantez…";}
+  function halt(){alive=false; MIC.subs.delete(onPitch); go.querySelector("span").textContent="Activer le micro"; go.classList.add("primary"); needle.className="needle off"; vu.style.width="0%"; msg.textContent=""; if(ACTIVE===api) ACTIVE=null; micIdleLater();}
   box.addEventListener("click",ev=>{
     if(ev.target.closest("[data-retrymic]")){MIC.failed=null; start(); return;}
     const b=ev.target.closest("[data-f]"); if(!b) return;
@@ -1348,6 +1420,7 @@ window.addEventListener("hashchange",route);
 updateStatus(); updateProgress(); route();
 })();
 </script>
+
 <script>if("serviceWorker" in navigator&&location.protocol==="https:"){addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{});});}</script>
 </body>
 </html>

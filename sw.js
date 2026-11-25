@@ -1,6 +1,6 @@
 // Service worker : fonctionne hors connexion après la première ouverture.
 // Pour publier une nouvelle version, changez le numéro ci-dessous.
-const V="solfege-v1";
+const V="solfege-v2";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL))); self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith("solfege-")&&k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
